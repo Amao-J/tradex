@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-ai7o6g)a%h1gksn^#&_vl&ptj)8rzidp1f$%7i+k!%4-)ehpd+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['tradex-production-9131.up.railway.app', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -120,3 +120,9 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# CSRF & Security
+CSRF_TRUSTED_ORIGINS = [
+    'https://tradex-production-9131.up.railway.app',
+    'http://localhost:8000',
+]
