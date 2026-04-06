@@ -848,8 +848,37 @@ async function loadPrices(){
   }catch(e){
     COINS.forEach(c=>{const df={bitcoin:83200,ethereum:3100,solana:145,binancecoin:380,ripple:.52,cardano:.44,dogecoin:.12,'avalanche-2':28};livePrices[c.id]={price:df[c.id]||1,pct:(Math.random()*10-5)}});
   }
-  renderMarkets();buildTicker();renderTradeSelector();updateTradePrice();syncDesktopTradePanel();
-  setInterval(()=>{loadPrices()},30000);
+renderMarkets();buildTicker();renderTradeSelector();updateTradePrice();syncDesktopTradePanel();
+
+  // On subsequent refreshes, only update prices in-place without rebuilding the DOM
+  setInterval(async ()=>{
+    try{
+      const ids=COINS.map(c=>c.id).join(',');
+      const r=await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&sparkline=true&price_change_percentage=24h`);
+      const d=await r.json();
+      d.forEach(c=>{
+        livePrices[c.id]={price:c.current_price,pct:c.price_change_percentage_24h||0};
+        sparklines[c.id]=c.sparkline_in_7d?.price||[];
+      });
+    }catch(e){
+      // Fall back to jitter on existing prices
+      COINS.forEach(c=>{if(livePrices[c.id]){livePrices[c.id].price*=(1+(Math.random()*.002-.001));}});
+    }
+    buildTicker();
+    // Update price text in-place without destroying canvases
+    COINS.forEach(c=>{
+      const p=livePrices[c.id];if(!p)return;
+      const priceEl=document.querySelector(`#msp_${c.id}`)?.parentElement?.nextElementSibling?.querySelector('.cr-price');
+      const pctEl=document.querySelector(`#msp_${c.id}`)?.parentElement?.nextElementSibling?.querySelector('.cr-pct');
+      if(priceEl) priceEl.textContent=fmtP(p.price);
+      if(pctEl){pctEl.textContent=(p.pct>=0?'+':'')+p.pct.toFixed(2)+'%';pctEl.className='cr-pct '+(p.pct>=0?'ti-u':'ti-d');}
+      // Redraw sparkline with latest data
+      const sp=sparklines[c.id];
+      if(sp?.length) drawMiniSpark('msp_'+c.id,sp,p.pct>=0);
+    });
+    updateTradePrice();
+    syncDesktopTradePanel();
+  }, 30000);
 }
 
 function buildTicker(){

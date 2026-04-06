@@ -367,10 +367,7 @@ footer{background:var(--bg3);border-top:1px solid var(--border);padding:32px 48p
       <div><div class="as-num">18.5%</div><div class="as-lbl">Max APY</div></div>
       <div><div class="as-num">2 min</div><div class="as-lbl">Setup</div></div>
     </div>
-    <!-- Floating live price cards -->
 
-
-  <!-- RIGHT PANEL — FORM ONLY -->
   <div class="auth-right">
     <div class="auth-form-wrap">
       {% csrf_token %}
@@ -383,9 +380,28 @@ footer{background:var(--bg3);border-top:1px solid var(--border);padding:32px 48p
         <div class="af-sub" id="authSub">Get started in under 2 minutes.</div>
         <div class="error-box" id="authErrors"></div>
 
-        <div class="af-group"><label class="af-label">Email Address</label><input class="af-input" type="email" id="authEmail" name="email" placeholder="you@example.com"/></div>
-        <div class="af-group"><label class="af-label">Username</label><input class="af-input" type="text" id="authUsername" name="username" placeholder="your_username"/></div>
-        <div class="af-row af-group">
+
+<div class="af-group" id="authEmailGroup">
+  <label class="af-label" id="authEmailLabel">Email Address</label>
+  <input
+    class="af-input"
+    type="email"
+    id="authEmail"
+    name="email"
+    placeholder="you@example.com"
+  />
+</div>
+
+<div class="af-group" id="authUsernameGroup">
+  <label class="af-label" id="authUsernameLabel">Username</label>
+  <input
+    class="af-input"
+    type="text"
+    id="authUsername"
+    name="username"
+    placeholder="alexmorgan"
+  />
+</div>
           <div><label class="af-label">First Name</label><input class="af-input" type="text" id="authFirst" name="first_name" placeholder="Alex"/></div>
           <div><label class="af-label">Last Name</label><input class="af-input" type="text" id="authLast" name="last_name" placeholder="Morgan"/></div>
         </div>
@@ -465,49 +481,74 @@ let authMode = 'signup';
 
 function setMode(mode){
   authMode = mode;
-  document.getElementById('authErrors').style.display = 'none';
-  // Always return to first step view
-  document.querySelectorAll('.auth-step').forEach(s=>s.classList.remove('active'));
-  document.getElementById('as1').classList.add('active');
 
   const isSignin = mode === 'signin';
-  const emailGrp = document.getElementById('authEmail').closest('.af-group');
-  const usernameGrp = document.getElementById('authUsername').closest('.af-group');
+
+  const emailGrp = document.getElementById('authEmailGroup');
+  const usernameGrp = document.getElementById('authUsernameGroup');
+  const usernameInput = document.getElementById('authUsername');
+  const usernameLabel = document.getElementById('authUsernameLabel');
   const nameRow = document.getElementById('authFirst').closest('.af-row');
   const pw2Grp = document.getElementById('authPw2').closest('.af-group');
   const terms = document.getElementById('authTerms').closest('.chk-row');
   const divider = document.getElementById('authDivider');
   const soc = document.getElementById('authSocBtns');
   const btn = document.getElementById('authSubmitBtn');
+  const err = document.getElementById('authErrors');
+
+  if(err){
+    err.style.display = 'none';
+    err.innerHTML = '';
+  }
+
+  // always stay on step 1 when switching modes
+  document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('as1').classList.add('active');
 
   if(isSignin){
     document.getElementById('authTitle').textContent = 'Welcome back';
     document.getElementById('authSub').textContent = 'Sign in to your account.';
     document.getElementById('authStepLbl').textContent = 'Sign In';
-    document.getElementById('authLinkRow').innerHTML = 'New here? <a onclick="setMode(\'signup\')">Create account</a>';
+    document.getElementById('authLinkRow').innerHTML =
+      'New here? <a onclick="setMode(\'signup\')">Create account</a>';
     document.getElementById('authProg').style.width = '100%';
-    emailGrp.style.display = 'none';
-    nameRow.style.display = 'none';
-    pw2Grp.style.display = 'none';
+
+    if(emailGrp) emailGrp.style.display = 'none';
+    if(nameRow) nameRow.style.display = 'none';
+    if(pw2Grp) pw2Grp.style.display = 'none';
     if(terms) terms.style.display = 'none';
     if(divider) divider.style.display = 'none';
     if(soc) soc.style.display = 'none';
-    usernameGrp.style.display = 'block';
+
+    if(usernameGrp) usernameGrp.style.display = 'block';
+    if(usernameLabel) usernameLabel.textContent = 'Email Address';
+
+    usernameInput.type = 'email';
+    usernameInput.placeholder = 'you@example.com';
+
     btn.textContent = 'Sign In →';
     btn.onclick = submitSignin;
   } else {
     document.getElementById('authTitle').textContent = 'Create account';
     document.getElementById('authSub').textContent = 'Get started in under 2 minutes.';
     document.getElementById('authStepLbl').textContent = 'Step 1 of 3';
-    document.getElementById('authLinkRow').innerHTML = 'Already have an account? <a onclick="setMode(\'signin\')">Sign in</a>';
+    document.getElementById('authLinkRow').innerHTML =
+      'Already have an account? <a onclick="setMode(\'signin\')">Sign in</a>';
     document.getElementById('authProg').style.width = '33%';
-    emailGrp.style.display = 'block';
-    nameRow.style.display = 'grid';
-    pw2Grp.style.display = 'block';
+
+    if(emailGrp) emailGrp.style.display = 'block';
+    if(nameRow) nameRow.style.display = 'grid';
+    if(pw2Grp) pw2Grp.style.display = 'block';
     if(terms) terms.style.display = 'flex';
     if(divider) divider.style.display = 'flex';
     if(soc) soc.style.display = 'grid';
-    usernameGrp.style.display = 'block';
+
+    if(usernameGrp) usernameGrp.style.display = 'block';
+    if(usernameLabel) usernameLabel.textContent = 'Username';
+
+    usernameInput.type = 'text';
+    usernameInput.placeholder = 'alexmorgan';
+
     btn.textContent = 'Create Account ✦';
     btn.onclick = submitSignup;
   }
@@ -536,12 +577,12 @@ function showError(msg){
 
 async function submitSignup(){
   const form = new FormData();
-  form.append('email',      document.getElementById('authEmail').value.trim());
-  form.append('username',   document.getElementById('authUsername').value.trim());
+  form.append('email', document.getElementById('authEmail').value.trim());
+  form.append('username', document.getElementById('authUsername').value.trim());
   form.append('first_name', document.getElementById('authFirst').value.trim());
-  form.append('last_name',  document.getElementById('authLast').value.trim());
-  form.append('password1',  document.getElementById('authPw').value);
-  form.append('password2',  document.getElementById('authPw2').value);
+  form.append('last_name', document.getElementById('authLast').value.trim());
+  form.append('password1', document.getElementById('authPw').value);
+  form.append('password2', document.getElementById('authPw2').value);
   form.append('csrfmiddlewaretoken', getCsrf());
 
   const btn = document.getElementById('authSubmitBtn');
@@ -549,16 +590,27 @@ async function submitSignup(){
   btn.disabled = true;
 
   try {
-    const r = await fetch("{% url 'signup' %}", {method:'POST', body:form});
+    const r = await fetch("{% url 'signup' %}", {
+      method: 'POST',
+      body: form
+    });
+
     const d = await r.json();
+
     btn.disabled = false;
+
     if(d.success){
-      // Move to step 2 of the multi-step onboarding (profile details)
-      goStep(2);
-    } else if(d.errors){
-      btn.textContent = 'Create Account ✦';
-      const msgs = Object.values(d.errors).flat().join('<br/>');
+      window.location.href = "{% url 'portfolio-dashboard' %}";
+      return;
+    }
+
+    btn.textContent = 'Create Account ✦';
+
+    if(d.errors){
+      const msgs = Object.values(d.errors).flat().join('<br>');
       showError(msgs);
+    } else {
+      showError('Signup failed. Please check your details.');
     }
   } catch(e){
     btn.disabled = false;
@@ -569,8 +621,8 @@ async function submitSignup(){
 
 async function submitSignin(){
   const form = new FormData();
-  form.append('username',  document.getElementById('authUsername').value.trim());
-  form.append('password',  document.getElementById('authPw').value);
+  form.append('username', document.getElementById('authUsername').value.trim());
+  form.append('password', document.getElementById('authPw').value);
   form.append('csrfmiddlewaretoken', getCsrf());
 
   const btn = document.getElementById('authSubmitBtn');
@@ -578,15 +630,27 @@ async function submitSignin(){
   btn.disabled = true;
 
   try {
-    const r = await fetch("{% url 'signin' %}", {method:'POST', body:form});
+    const r = await fetch("{% url 'signin' %}", {
+      method: 'POST',
+      body: form
+    });
+
     const d = await r.json();
+
     btn.disabled = false;
+
     if(d.success){
       window.location.href = "{% url 'app-shell' %}";
-    } else if(d.errors){
-      btn.textContent = 'Sign In →';
-      const msgs = Object.values(d.errors).flat().join('<br/>');
+      return;
+    }
+
+    btn.textContent = 'Sign In →';
+
+    if(d.errors){
+      const msgs = Object.values(d.errors).flat().join('<br>');
       showError(msgs);
+    } else {
+      showError('Sign in failed. Please check your details.');
     }
   } catch(e){
     btn.disabled = false;
