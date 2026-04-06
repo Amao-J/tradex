@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="csrf-token" content="{{ csrf_token }}"/>
+<title>NexusX — Trade the Future</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#c8860a;--gold-l:#f0c040;--gold-bg:#fdf8ec;--gold-br:#e8c96a;
+  --bg:#f7f6f2;--bg2:#ffffff;--bg3:#eeece6;--surf:#ffffff;--surf2:#f4f2ec;
+  --txt:#1a1814;--txt2:#4a4740;--muted:#8a8680;--border:#e2dfd6;
+  --up:#16a34a;--upbg:#dcfce7;--dn:#dc2626;--dnbg:#fee2e2;
+  --sh:0 2px 12px rgba(0,0,0,0.07);--sh2:0 6px 32px rgba(0,0,0,0.11);
+  --r:12px;--r2:18px;
+}
+html,body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
+button,input,select,textarea{font-family:'Syne',sans-serif;cursor:pointer}
+a{text-decoration:none}
+
+/* ── PAGE SWITCHER ── */
+.page{display:none;min-height:100vh}
+.page.active{display:block}
+#page-auth.active{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
+
+/* ── NAV ── */
+.lp-nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 48px;height:66px;
+  background:rgba(247,246,242,.92);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.lp-logo{display:flex;align-items:center;gap:10px;cursor:pointer}
+.lm{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--gold-l),var(--gold));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;color:#fff;box-shadow:0 2px 8px rgba(200,134,10,.3)}
+.lt{font-size:19px;font-weight:800;letter-spacing:-.5px;color:var(--txt)}
+.lt span{color:var(--gold)}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{font-size:13px;font-weight:500;color:var(--txt2);cursor:pointer;transition:color .18s}
+.nav-links a:hover{color:var(--txt)}
+.nav-cta{display:flex;gap:10px}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--txt2);border-radius:10px;padding:8px 18px;font-size:13px;font-weight:600;transition:all .18s}
+.btn-ghost:hover{border-color:var(--gold-br);color:var(--gold)}
+.btn-gold{background:linear-gradient(135deg,var(--gold-l),var(--gold));border:none;color:#fff;border-radius:10px;padding:9px 22px;font-size:13px;font-weight:700;box-shadow:0 2px 10px rgba(200,134,10,.22);transition:all .2s}
+.btn-gold:hover{transform:translateY(-1px)}
+
+/* ── HERO ── */
+.lp-hero{
+  max-width:1100px;margin:0 auto;padding:130px 48px 80px;
+  display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;
+}
+.lp-badge{display:inline-flex;align-items:center;gap:7px;background:var(--gold-bg);border:1px solid var(--gold-br);border-radius:30px;padding:6px 14px;font-size:11px;font-family:'DM Mono',monospace;color:var(--gold);letter-spacing:1px;margin-bottom:24px;animation:fadeUp .6s ease both}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.lp-h1{font-size:clamp(44px,5.5vw,72px);font-weight:800;line-height:1;letter-spacing:-3px;margin-bottom:18px;animation:fadeUp .6s .08s ease both}
+.lp-h1 em{font-family:'Playfair Display',serif;font-style:italic;background:linear-gradient(135deg,var(--gold-l),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.lp-sub{font-size:16px;color:var(--txt2);line-height:1.75;max-width:460px;margin-bottom:32px;animation:fadeUp .6s .15s ease both}
+.lp-actions{display:flex;gap:12px;flex-wrap:wrap;animation:fadeUp .6s .2s ease both}
+.btn-lp{background:linear-gradient(135deg,var(--gold-l),var(--gold));border:none;color:#fff;border-radius:13px;padding:15px 32px;font-size:14px;font-weight:700;transition:all .22s;box-shadow:0 3px 14px rgba(200,134,10,.28)}
+.btn-lp:hover{transform:translateY(-2px);box-shadow:0 5px 20px rgba(200,134,10,.38)}
+.btn-lp-outline{background:var(--bg2);border:1.5px solid var(--border);color:var(--txt2);border-radius:13px;padding:15px 28px;font-size:14px;font-weight:600;transition:all .22s}
+.btn-lp-outline:hover{border-color:var(--gold-br);color:var(--gold)}
+
+/* ── PHONE MOCKUP ── */
+.lp-mockup{position:relative}
+.mock-phone{background:var(--bg);border-radius:28px;border:1.5px solid var(--border);box-shadow:var(--sh2),0 0 0 8px rgba(0,0,0,.03);overflow:hidden;max-width:280px;margin:0 auto}
+.mp-notch{height:24px;background:var(--bg);display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--border)}
+.mp-notch-bar{width:80px;height:6px;border-radius:3px;background:var(--txt);opacity:.07}
+.mp-body{padding:14px}
+.mp-dark-card{background:linear-gradient(135deg,#1a1612,#2a1f08);border-radius:16px;padding:16px;margin-bottom:12px}
+.mp-card-lbl{font-size:9px;font-family:'DM Mono',monospace;color:rgba(255,255,255,.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px}
+.mp-card-val{font-size:24px;font-weight:800;color:#fff;letter-spacing:-1px}
+.mp-pill{background:rgba(74,222,128,.18);color:#4ade80;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:600;font-family:'DM Mono',monospace;display:inline-block;margin-top:6px}
+.mp-quick{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.mp-qitem{background:var(--surf2);border:1px solid var(--border);border-radius:9px;padding:7px 4px;text-align:center}
+.mp-qi-icon{font-size:13px}
+.mp-qi-lbl{font-size:8px;font-family:'DM Mono',monospace;color:var(--muted)}
+.mp-coins{display:flex;flex-direction:column;gap:8px}
+.mp-coin{display:flex;align-items:center;gap:9px;padding:8px 10px;background:var(--surf);border:1px solid var(--border);border-radius:10px}
+.mp-ci{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+.mp-cn{font-size:12px;font-weight:600;flex:1}
+.mp-cp{font-size:11px;font-weight:700;font-family:'DM Mono',monospace}
+.mock-floater{position:absolute;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:9px 13px;box-shadow:var(--sh);display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;animation:float 4s ease-in-out infinite;white-space:nowrap;z-index:2}
+.mock-floater:nth-child(2){animation-delay:-2s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.mf-a{top:-8px;right:-20px}
+.mf-b{bottom:50px;right:-30px}
+
+/* ── TICKER ── */
+.lp-ticker{background:var(--bg3);border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow:hidden;padding:12px 0;position:relative}
+.ticker-inner{display:flex;animation:tick 30s linear infinite;white-space:nowrap}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ti{display:inline-flex;align-items:center;gap:7px;padding:0 24px;border-right:1px solid var(--border);font-family:'DM Mono',monospace;font-size:12px}
+.ti-s{font-weight:500;color:var(--gold)}
+.ti-u{color:var(--up)}.ti-d{color:var(--dn)}
+
+/* ── SERVICES ── */
+.lp-services{max-width:1100px;margin:0 auto;padding:80px 48px}
+.svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:40px}
+.svc-item{background:var(--surf);border:1.5px solid var(--border);border-radius:var(--r2);padding:24px;transition:all .22s;position:relative;overflow:hidden}
+.svc-item::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top left,rgba(200,134,10,.06),transparent 65%);opacity:0;transition:opacity .22s}
+.svc-item:hover{transform:translateY(-3px);border-color:var(--gold-br);box-shadow:0 6px 24px rgba(200,134,10,.1)}
+.svc-item:hover::after{opacity:1}
+.svc-item.featured{border-color:var(--gold-br);background:linear-gradient(160deg,#fffbf0,var(--surf))}
+.si-icon{width:46px;height:46px;border-radius:14px;background:var(--gold-bg);border:1px solid var(--gold-br);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px}
+.featured .si-icon{background:linear-gradient(135deg,var(--gold-l),var(--gold));border:none}
+.si-badge{position:absolute;top:16px;right:16px;background:linear-gradient(135deg,var(--gold-l),var(--gold));color:#fff;font-size:9px;font-family:'DM Mono',monospace;letter-spacing:1px;padding:3px 9px;border-radius:20px}
+.si-h{font-size:15px;font-weight:700;margin-bottom:8px}
+.si-p{font-size:13px;color:var(--txt2);line-height:1.65;margin-bottom:14px}
+.si-stat{display:inline-flex;align-items:center;gap:5px;background:var(--surf2);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:11px;font-family:'DM Mono',monospace;color:var(--txt2)}
+.featured .si-stat{background:rgba(240,192,64,.15);border-color:var(--gold-br);color:var(--gold)}
+
+/* ── STATS ── */
+.lp-stats{background:linear-gradient(135deg,#1a1612,#2a1f08);padding:60px 48px}
+.lp-stats-grid{max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:32px;text-align:center}
+.lsg-num{font-size:36px;font-weight:800;color:#f0c040;letter-spacing:-2px}
+.lsg-lbl{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;color:rgba(255,255,255,.4);text-transform:uppercase;margin-top:6px}
+
+/* ── CTA + FOOTER ── */
+.lp-cta{text-align:center;padding:80px 24px;background:var(--bg2);border-top:1px solid var(--border)}
+
+footer{background:var(--bg3);border-top:1px solid var(--border);padding:32px 48px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.footer-links{display:flex;gap:22px;flex-wrap:wrap}
+.footer-links a{font-size:12px;color:var(--muted)}
+.footer-copy{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace}
+
+/* ── AUTH PAGE ── */
+.auth-left{background:linear-gradient(160deg,#1a1612,#261d08,#0e160a);display:flex;flex-direction:column;justify-content:space-between;padding:44px;position:relative;overflow:hidden}
+.auth-left-glow{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 30% 50%,rgba(240,192,64,.08),transparent)}
+.auth-quote{position:relative;z-index:1;margin:auto 0}
+.aq-text{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(22px,2.5vw,34px);line-height:1.35;color:#f0f0e8;margin-bottom:20px}
+.aq-text span{color:#f0c040}
+.aq-author{font-size:10px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;letter-spacing:1px}
+.auth-stats{position:relative;z-index:1;display:flex;gap:28px}
+.as-num{font-size:22px;font-weight:800;color:#f0c040;letter-spacing:-1px}
+.as-lbl{font-size:10px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;letter-spacing:.5px;margin-top:2px}
+.auth-floaters{position:absolute;right:36px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:1}
+.af-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:13px;padding:12px 15px;display:flex;align-items:center;gap:11px;animation:float 4s ease-in-out infinite}
+.af-card:nth-child(2){animation-delay:-1.5s}.af-card:nth-child(3){animation-delay:-3s}
+.afc-icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0}
+.afc-name{font-size:12px;font-weight:600;color:#f0f0e8}
+.afc-sym{font-size:9px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;margin-top:1px}
+.afc-price{font-size:12px;font-weight:700;font-family:'DM Mono',monospace;color:#f0f0e8;text-align:right}
+.afc-chg{font-size:10px;text-align:right;margin-top:1px}
+
+.auth-right{display:flex;align-items:center;justify-content:center;padding:44px 60px;background:var(--bg);overflow-y:auto}
+.auth-form-wrap{width:100%;max-width:400px}
+.af-prog{height:3px;background:var(--bg3);border-radius:3px;margin-bottom:28px;overflow:hidden}
+.af-prog-fill{height:3px;background:linear-gradient(90deg,var(--gold-l),var(--gold));border-radius:3px;transition:width .5s ease}
+.af-step-lbl{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+.af-title{font-size:26px;font-weight:800;letter-spacing:-1px;margin-bottom:5px}
+.af-sub{font-size:13px;color:var(--txt2);margin-bottom:28px;line-height:1.6}
+.af-group{margin-bottom:15px}
+.af-label{font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.5px;color:var(--muted);margin-bottom:6px;display:block}
+.af-input{width:100%;background:var(--surf);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--txt);outline:none;transition:all .18s}
+.af-input::placeholder{color:var(--muted)}
+.af-input:focus{border-color:var(--gold-br);background:#fffdf7;box-shadow:0 0 0 3px rgba(200,134,10,.07)}
+.af-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pw-wrap{position:relative}
+.pw-wrap .af-input{padding-right:42px}
+.eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px}
+.str-bar{display:flex;gap:4px;margin-top:7px}
+.sb{flex:1;height:3px;border-radius:2px;background:var(--bg3);transition:background .3s}
+.chk-row{display:flex;align-items:flex-start;gap:9px;margin-bottom:18px;font-size:12px;color:var(--txt2);line-height:1.6}
+.chk-row input{width:15px;height:15px;accent-color:var(--gold);flex-shrink:0;margin-top:1px}
+.chk-row a{color:var(--gold)}
+.btn-auth{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold-l),var(--gold));border:none;border-radius:11px;font-size:15px;font-weight:700;color:#fff;transition:all .22s;margin-bottom:16px;box-shadow:0 2px 12px rgba(200,134,10,.22)}
+.btn-auth:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(200,134,10,.3)}
+.divider{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.div-line{flex:1;height:1px;background:var(--border)}
+.div-text{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace}
+.soc-btns{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:22px}
+.soc-btn{background:var(--surf);border:1.5px solid var(--border);border-radius:9px;padding:11px;display:flex;align-items:center;justify-content:center;gap:7px;font-size:13px;font-weight:600;color:var(--txt);transition:all .18s}
+.soc-btn:hover{border-color:var(--gold-br);background:var(--gold-bg)}
+.auth-link{text-align:center;font-size:13px;color:var(--txt2)}
+.auth-link a{color:var(--gold);font-weight:600;cursor:pointer}
+.auth-step{display:none}.auth-step.active{display:block}
+.success-wrap{text-align:center;padding:20px 0}
+.success-icon{width:68px;height:68px;border-radius:50%;margin:0 auto 20px;background:var(--upbg);border:2px solid rgba(22,163,74,.3);display:flex;align-items:center;justify-content:center;font-size:30px;animation:popIn .5s cubic-bezier(.34,1.56,.64,1) both}
+.error-box{display:none;margin-bottom:16px;padding:14px 16px;background:#feeaea;border:1px solid #f5c2c7;border-radius:12px;color:#842029;font-size:13px;line-height:1.6}
+
+@keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+@media(min-width:601px) and (max-width:900px){
+  .lp-hero{grid-template-columns:1fr;padding:110px 32px 60px}
+  .lp-mockup{display:none}
+  .svc-grid{grid-template-columns:1fr 1fr}
+  .lp-stats-grid{grid-template-columns:repeat(2,1fr)}
+  #page-auth.active{grid-template-columns:1fr}
+  .auth-left{display:none}
+  .auth-right{padding:60px 32px}
+  .lp-nav{padding:0 32px}
+  .footer,.lp-services,.lp-stats{padding-left:32px;padding-right:32px}
+  .lp-h1{font-size:clamp(38px,4vw,56px)}
+  .lp-sub{font-size:15px}
+}
+
+@media(max-width:600px){
+  .svc-grid{grid-template-columns:1fr}
+  .lp-hero{grid-template-columns:1fr;padding:100px 16px 50px}
+  .lp-mockup{display:none}
+  .lp-stats-grid{grid-template-columns:1fr}
+  .lp-h1{font-size:clamp(32px,6vw,44px)}
+  .lp-sub{font-size:14px;line-height:1.6}
+  .lp-actions{flex-direction:column}
+  .btn-lp,.btn-lp-outline{width:100%}
+  #page-auth.active{grid-template-columns:1fr}
+  .auth-left{display:none}
+  .auth-right{padding:40px 16px}
+  .lp-nav{padding:0 12px;height:58px}
+  .nav-links{display:none}
+  .nav-cta{gap:6px}
+  .btn-ghost,.btn-gold{padding:8px 14px;font-size:12px}
+  .footer,.lp-services,.lp-stats,.lp-ticker{padding-left:16px;padding-right:16px}
+  .ti{padding:0 16px;font-size:11px}
+  .lm{width:32px;height:32px;font-size:15px}
+  .lt{font-size:16px;letter-spacing:-.3px}
+  .svc-card{padding:20px;border-radius:14px}
+  .mp-phone{max-width:220px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════
+     LANDING PAGE
+═══════════════════════════ -->
+<div id="page-landing" class="page active">
+  <nav class="lp-nav">
+    <div class="lp-logo" onclick="showLanding()">
+      <div class="lm">₿</div>
+      <div class="lt">NEXUS<span>X</span></div>
+    </div>
+    <div class="nav-links">
+      <a onclick="document.getElementById('svc-anchor').scrollIntoView({behavior:'smooth'})">Services</a>
+      <a onclick="document.getElementById('staking-anchor').scrollIntoView({behavior:'smooth'})">Staking</a>
+      <a onclick="document.getElementById('stats-anchor').scrollIntoView({behavior:'smooth'})">About</a>
+    </div>
+    <div class="nav-cta">
+      <button class="btn-ghost" onclick="showAuth('signin')">Sign In</button>
+      <button class="btn-gold" onclick="showAuth('signup')">Get Started</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="lp-hero">
+    <div>
+      <div class="lp-badge"><div class="ldot"></div>LIVE MARKETS — ZERO FEES</div>
+      <div class="lp-h1">Invest, Trade<br/>&amp; <em>Stake</em><br/>Crypto</div>
+      <p class="lp-sub">Institutional-grade tools for everyone. Earn up to 18.5% APY while you trade 400+ coins — all from one premium platform.</p>
+      <div class="lp-actions">
+        <button class="btn-lp" onclick="showAuth('signup')">Start Free Today →</button>
+        <button class="btn-lp-outline" onclick="document.getElementById('svc-anchor').scrollIntoView({behavior:'smooth'})">See Features</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;margin-top:24px;animation:fadeUp .6s .3s ease both">
+        <div style="display:flex">
+          <span style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--gold-l),var(--gold));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;border:2px solid var(--bg2)">JK</span>
+          <span style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#627eea,#3b5bdb);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;border:2px solid var(--bg2);margin-left:-7px">AM</span>
+          <span style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#9945ff,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;border:2px solid var(--bg2);margin-left:-7px">RS</span>
+        </div>
+        <div style="font-size:12px;color:var(--muted);font-family:'DM Mono',monospace"><b style="color:var(--txt)">2.4M+</b> active traders worldwide</div>
+      </div>
+    </div>
+    <div class="lp-mockup">
+      <div style="position:relative;display:inline-block">
+        <div class="mock-floater mf-a"><span style="width:8px;height:8px;border-radius:50%;background:var(--up)"></span><span style="font-size:11px;font-family:'DM Mono',monospace"><b style="color:var(--up)">+8.4%</b> ETH today</span></div>
+        <div class="mock-floater mf-b"><span style="font-size:17px">🔒</span><div><div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted)">APY</div><div style="font-size:13px;font-weight:800;color:var(--up)">18.5% SOL</div></div></div>
+        <div class="mock-phone" style="transform:rotate(-2deg)">
+          <div class="mp-notch"><div class="mp-notch-bar"></div></div>
+          <div class="mp-body">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <div style="font-size:12px;color:var(--muted)">Good morning, <b style="color:var(--txt);font-size:13px">Alex 👋</b></div>
+              <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold-l),var(--gold));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff">A</div>
+            </div>
+            <div class="mp-dark-card">
+              <div class="mp-card-lbl">Portfolio Value</div>
+              <div class="mp-card-val">$84,291</div>
+              <div class="mp-pill">+2.34% today</div>
+            </div>
+            <div class="mp-quick">
+              <div class="mp-qitem"><div class="mp-qi-icon">↑</div><div class="mp-qi-lbl">Buy</div></div>
+              <div class="mp-qitem"><div class="mp-qi-icon">↓</div><div class="mp-qi-lbl">Sell</div></div>
+              <div class="mp-qitem" style="background:var(--gold-bg);border-color:var(--gold-br)"><div class="mp-qi-icon">⬡</div><div class="mp-qi-lbl" style="color:var(--gold)">Stake</div></div>
+              <div class="mp-qitem"><div class="mp-qi-icon">⇄</div><div class="mp-qi-lbl">Swap</div></div>
+            </div>
+            <div class="mp-coins">
+              <div class="mp-coin"><div class="mp-ci" style="background:rgba(247,147,26,.12);color:#f7931a">₿</div><div class="mp-cn">Bitcoin</div><div class="mp-cp" id="lp-btc-p">$83,200</div></div>
+              <div class="mp-coin"><div class="mp-ci" style="background:rgba(98,126,234,.12);color:#627eea">Ξ</div><div class="mp-cn">Ethereum</div><div class="mp-cp" id="lp-eth-p">$3,100</div></div>
+              <div class="mp-coin"><div class="mp-ci" style="background:rgba(153,69,255,.12);color:#9945ff">◎</div><div class="mp-cn">Solana</div><div class="mp-cp" id="lp-sol-p">$145</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TICKER -->
+  <div class="lp-ticker"><div class="ticker-inner" id="lp-ticker"></div></div>
+
+  <!-- SERVICES -->
+  <div id="svc-anchor"></div>
+  <div class="lp-services">
+    <div style="text-align:center;margin-bottom:8px">
+      <div style="font-size:11px;font-family:'DM Mono',monospace;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px">What we offer</div>
+      <div style="font-size:clamp(28px,4vw,44px);font-weight:800;letter-spacing:-1.5px;line-height:1.1">Everything to <span style="color:var(--gold)">grow</span> your wealth</div>
+    </div>
+    <div class="svc-grid">
+      <div class="svc-item"><div class="si-icon">📈</div><div class="si-h">Spot Trading</div><div class="si-p">Buy and sell 400+ cryptocurrencies with real-time charts and instant execution.</div><div class="si-stat">400+ markets</div></div>
+      <div class="svc-item featured" id="staking-anchor"><div class="si-badge">★ POPULAR</div><div class="si-icon">🔒</div><div class="si-h">Crypto Staking</div><div class="si-p">Lock your coins and earn up to 18.5% APY. Flexible and fixed-term pools available.</div><div class="si-stat">Up to 18.5% APY</div></div>
+      <div class="svc-item"><div class="si-icon">💳</div><div class="si-h">Multi-Chain Wallet</div><div class="si-p">Deposit, withdraw, and manage assets across BTC, ETH, SOL and more networks securely.</div><div class="si-stat">8+ networks</div></div>
+      <div class="svc-item"><div class="si-icon">⚡</div><div class="si-h">Instant Swaps</div><div class="si-p">Swap between any tokens in seconds using aggregated best-rate liquidity.</div><div class="si-stat">Best-rate routing</div></div>
+      <div class="svc-item"><div class="si-icon">🤖</div><div class="si-h">AI Portfolio</div><div class="si-p">Let NexusX AI rebalance, DCA, and optimize your portfolio automatically.</div><div class="si-stat">Smart automation</div></div>
+      <div class="svc-item"><div class="si-icon">📊</div><div class="si-h">Derivatives</div><div class="si-p">Trade perpetual futures with up to 10× leverage on BTC, ETH, and top altcoins.</div><div class="si-stat">Up to 10× leverage</div></div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div id="stats-anchor"></div>
+  <div class="lp-stats">
+    <div class="lp-stats-grid">
+      <div><div class="lsg-num">$48B+</div><div class="lsg-lbl">Volume Traded</div></div>
+      <div><div class="lsg-num">2.4M+</div><div class="lsg-lbl">Active Traders</div></div>
+      <div><div class="lsg-num">18.5%</div><div class="lsg-lbl">Max Staking APY</div></div>
+      <div><div class="lsg-num">99.99%</div><div class="lsg-lbl">Uptime SLA</div></div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="lp-cta">
+    <div style="font-size:clamp(28px,5vw,48px);font-weight:800;letter-spacing:-2px;margin-bottom:14px">Start earning <em style="font-family:'Playfair Display',serif;font-style:italic;color:var(--gold)">passive income</em> today</div>
+    <p style="font-size:15px;color:var(--txt2);margin-bottom:32px">Join 2.4 million traders. No fees. Setup in 2 minutes.</p>
+    <button class="btn-lp" style="font-size:15px;padding:16px 40px" onclick="showAuth('signup')">Create Free Account →</button>
+    <div style="display:flex;justify-content:center;gap:24px;margin-top:24px;flex-wrap:wrap">
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace"><span style="width:16px;height:16px;border-radius:50%;background:var(--upbg);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--up)">✓</span>Zero trading fees</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace"><span style="width:16px;height:16px;border-radius:50%;background:var(--upbg);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--up)">✓</span>Up to 18.5% APY</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace"><span style="width:16px;height:16px;border-radius:50%;background:var(--upbg);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--up)">✓</span>Bank-grade security</span>
+    </div>
+  </div>
+
+  <footer>
+    <div class="lp-logo"><div class="lm">₿</div><div class="lt">NEXUS<span>X</span></div></div>
+    <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Security</a><a href="#">Docs</a></div>
+    <div class="footer-copy">© 2026 NexusX Ltd.</div>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════
+     AUTH PAGE (sign up / sign in)
+     No app shell here — on success, redirect to /app/
+═══════════════════════════ -->
+<div id="page-auth" class="page">
+  <!-- LEFT PANEL -->
+  <div class="auth-left">
+    <div class="auth-left-glow"></div>
+    <div class="lp-logo" onclick="showLanding()" style="position:relative;z-index:1;cursor:pointer">
+      <div class="lm">₿</div><div class="lt" style="color:#f0f0e8">NEXUS<span style="color:#f0c040">X</span></div>
+    </div>
+    <div class="auth-quote">
+      <div class="aq-text">"Don't let your money sit idle. <span>Stake it. Grow it.</span> Let NexusX work for you 24/7."</div>
+      <div class="aq-author">— NEXUSX RESEARCH DESK</div>
+    </div>
+    <div class="auth-stats">
+      <div><div class="as-num">$0</div><div class="as-lbl">Fees</div></div>
+      <div><div class="as-num">18.5%</div><div class="as-lbl">Max APY</div></div>
+      <div><div class="as-num">2 min</div><div class="as-lbl">Setup</div></div>
+    </div>
+    <!-- Floating live price cards -->
+    <div class="auth-floaters">
+      <div class="af-card"><div class="afc-icon" style="background:rgba(247,147,26,.2);color:#f7931a">₿</div><div style="flex:1"><div class="afc-name">Bitcoin</div><div class="afc-sym">BTC</div></div><div><div class="afc-price" id="af-btc">—</div><div class="afc-chg" id="af-btcC" style="color:#4ade80">—</div></div></div>
+      <div class="af-card"><div class="afc-icon" style="background:rgba(98,126,234,.2);color:#627eea">Ξ</div><div style="flex:1"><div class="afc-name">Ethereum</div><div class="afc-sym">ETH</div></div><div><div class="afc-price" id="af-eth">—</div><div class="afc-chg" id="af-ethC" style="color:#4ade80">—</div></div></div>
+      <div class="af-card"><div class="afc-icon" style="background:rgba(153,69,255,.2);color:#9945ff">◎</div><div style="flex:1"><div class="afc-name">Solana</div><div class="afc-sym">SOL · 18.5% APY</div></div><div><div class="afc-price" id="af-sol">—</div><div class="afc-chg" id="af-solC" style="color:#4ade80">—</div></div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL — FORM ONLY -->
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+      {% csrf_token %}
+      <div class="af-prog"><div class="af-prog-fill" id="authProg" style="width:33%"></div></div>
+
+      <!-- ── SIGNUP STEP 1 ── -->
+      <div class="auth-step active" id="as1">
+        <div class="af-step-lbl" id="authStepLbl">Step 1 of 3</div>
+        <div class="af-title" id="authTitle">Create account</div>
+        <div class="af-sub" id="authSub">Get started in under 2 minutes.</div>
+        <div class="error-box" id="authErrors"></div>
+
+        <div class="af-group"><label class="af-label">Email Address</label><input class="af-input" type="email" id="authEmail" name="email" placeholder="you@example.com"/></div>
+        <div class="af-group"><label class="af-label">Username</label><input class="af-input" type="text" id="authUsername" name="username" placeholder="your_username"/></div>
+        <div class="af-row af-group">
+          <div><label class="af-label">First Name</label><input class="af-input" type="text" id="authFirst" name="first_name" placeholder="Alex"/></div>
+          <div><label class="af-label">Last Name</label><input class="af-input" type="text" id="authLast" name="last_name" placeholder="Morgan"/></div>
+        </div>
+        <div class="af-group">
+          <label class="af-label">Password</label>
+          <div class="pw-wrap"><input class="af-input" type="password" id="authPw" name="password1" placeholder="Min. 8 characters" oninput="checkStrength(this.value)"/><button class="eye-btn" type="button" onclick="togglePw('authPw',this)">👁</button></div>
+          <div class="str-bar"><div class="sb" id="sb1"></div><div class="sb" id="sb2"></div><div class="sb" id="sb3"></div><div class="sb" id="sb4"></div></div>
+        </div>
+        <div class="af-group"><label class="af-label">Confirm Password</label><div class="pw-wrap"><input class="af-input" type="password" id="authPw2" name="password2" placeholder="Re-enter password"/><button class="eye-btn" type="button" onclick="togglePw('authPw2',this)">👁</button></div></div>
+        <div class="chk-row"><input type="checkbox" id="authTerms" checked/><label for="authTerms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label></div>
+        <button class="btn-auth" id="authSubmitBtn" onclick="submitSignup()">Create Account ✦</button>
+        <div class="divider" id="authDivider"><div class="div-line"></div><div class="div-text">or continue with</div><div class="div-line"></div></div>
+        <div class="soc-btns" id="authSocBtns">
+          <button class="soc-btn">G&nbsp; Google</button>
+          <button class="soc-btn">𝕏&nbsp; Twitter</button>
+        </div>
+        <div class="auth-link" id="authLinkRow">Already have an account? <a onclick="setMode('signin')">Sign in</a></div>
+      </div>
+
+      <!-- ── SIGNUP STEP 2 ── -->
+      <div class="auth-step" id="as2">
+        <div class="af-step-lbl">Step 2 of 3</div>
+        <div class="af-title">Your profile</div>
+        <div class="af-sub">Personalise your experience.</div>
+        <div class="af-group"><label class="af-label">Country</label><select class="af-input" style="appearance:none"><option>Nigeria</option><option>United States</option><option>United Kingdom</option><option>Germany</option><option>Canada</option><option>South Africa</option><option>Other</option></select></div>
+        <div class="af-group"><label class="af-label">Experience Level</label><select class="af-input" style="appearance:none"><option>Beginner — just getting started</option><option>Intermediate — some experience</option><option>Advanced — professional trader</option></select></div>
+        <div class="af-group"><label class="af-label">Primary Interest</label><select class="af-input" style="appearance:none"><option>Spot trading</option><option>Staking &amp; passive income</option><option>Both trading and staking</option><option>Derivatives</option></select></div>
+        <button class="btn-auth" onclick="goStep(3)">Continue →</button>
+        <div class="auth-link" style="margin-top:12px"><a onclick="goStep(1)">← Back</a></div>
+      </div>
+
+      <!-- ── SIGNUP STEP 3 ── -->
+      <div class="auth-step" id="as3">
+        <div class="af-step-lbl">Step 3 of 3</div>
+        <div class="af-title">Verify identity</div>
+        <div class="af-sub">Required by financial regulations.</div>
+        <div class="af-group"><label class="af-label">Date of Birth</label><input class="af-input" type="date"/></div>
+        <div class="af-group"><label class="af-label">ID Type</label><select class="af-input" style="appearance:none"><option>Passport</option><option>National ID Card</option><option>Driver's License</option></select></div>
+        <div class="chk-row"><input type="checkbox" checked/><label>I certify the information is accurate and I am 18+ years old</label></div>
+        <button class="btn-auth" onclick="finaliseAccount()">Create My Account ✦</button>
+        <div class="auth-link" style="margin-top:12px"><a onclick="goStep(2)">← Back</a></div>
+      </div>
+
+      <!-- ── SUCCESS ── -->
+      <div class="auth-step" id="asSuccess">
+        <div class="success-wrap">
+          <div class="success-icon">✓</div>
+          <div style="font-size:24px;font-weight:800;letter-spacing:-1px;margin-bottom:8px">Welcome to NexusX!</div>
+          <div style="font-size:14px;color:var(--txt2);line-height:1.7;margin-bottom:28px">Account created. You've been credited <b style="color:var(--gold)">$10,000 virtual USD</b>. Redirecting to your dashboard…</div>
+          <div style="width:100%;height:3px;background:var(--bg3);border-radius:3px;overflow:hidden"><div id="redirectBar" style="height:3px;background:linear-gradient(90deg,var(--gold-l),var(--gold));width:0%;transition:width 2s linear;border-radius:3px"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════
+   PAGE ROUTING
+═══════════════════════════════ */
+function showLanding(){
+  document.getElementById('page-landing').classList.add('active');
+  document.getElementById('page-auth').classList.remove('active');
+}
+function showAuth(mode){
+  document.getElementById('page-landing').classList.remove('active');
+  document.getElementById('page-auth').classList.add('active');
+  setMode(mode);
+  loadAuthPrices();
+}
+
+/* ═══════════════════════════════
+   AUTH MODE SWITCHER
+   Toggles between signup (multi-step) and signin (single step)
+═══════════════════════════════ */
+let authMode = 'signup';
+
+function setMode(mode){
+  authMode = mode;
+  document.getElementById('authErrors').style.display = 'none';
+  // Always return to first step view
+  document.querySelectorAll('.auth-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('as1').classList.add('active');
+
+  const isSignin = mode === 'signin';
+  const emailGrp = document.getElementById('authEmail').closest('.af-group');
+  const usernameGrp = document.getElementById('authUsername').closest('.af-group');
+  const nameRow = document.getElementById('authFirst').closest('.af-row');
+  const pw2Grp = document.getElementById('authPw2').closest('.af-group');
+  const terms = document.getElementById('authTerms').closest('.chk-row');
+  const divider = document.getElementById('authDivider');
+  const soc = document.getElementById('authSocBtns');
+  const btn = document.getElementById('authSubmitBtn');
+
+  if(isSignin){
+    document.getElementById('authTitle').textContent = 'Welcome back';
+    document.getElementById('authSub').textContent = 'Sign in to your account.';
+    document.getElementById('authStepLbl').textContent = 'Sign In';
+    document.getElementById('authLinkRow').innerHTML = 'New here? <a onclick="setMode(\'signup\')">Create account</a>';
+    document.getElementById('authProg').style.width = '100%';
+    emailGrp.style.display = 'none';
+    nameRow.style.display = 'none';
+    pw2Grp.style.display = 'none';
+    if(terms) terms.style.display = 'none';
+    if(divider) divider.style.display = 'none';
+    if(soc) soc.style.display = 'none';
+    usernameGrp.style.display = 'block';
+    btn.textContent = 'Sign In →';
+    btn.onclick = submitSignin;
+  } else {
+    document.getElementById('authTitle').textContent = 'Create account';
+    document.getElementById('authSub').textContent = 'Get started in under 2 minutes.';
+    document.getElementById('authStepLbl').textContent = 'Step 1 of 3';
+    document.getElementById('authLinkRow').innerHTML = 'Already have an account? <a onclick="setMode(\'signin\')">Sign in</a>';
+    document.getElementById('authProg').style.width = '33%';
+    emailGrp.style.display = 'block';
+    nameRow.style.display = 'grid';
+    pw2Grp.style.display = 'block';
+    if(terms) terms.style.display = 'flex';
+    if(divider) divider.style.display = 'flex';
+    if(soc) soc.style.display = 'grid';
+    usernameGrp.style.display = 'block';
+    btn.textContent = 'Create Account ✦';
+    btn.onclick = submitSignup;
+  }
+}
+
+function goStep(n){
+  document.querySelectorAll('.auth-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('as'+n).classList.add('active');
+  const pcts = {1:33, 2:66, 3:100};
+  document.getElementById('authProg').style.width = (pcts[n]||33) + '%';
+}
+
+/* ═══════════════════════════════
+   FORM SUBMISSION
+═══════════════════════════════ */
+function getCsrf(){
+  return document.querySelector('[name=csrfmiddlewaretoken]')?.value
+    || document.querySelector('meta[name="csrf-token"]')?.content || '';
+}
+
+function showError(msg){
+  const el = document.getElementById('authErrors');
+  el.innerHTML = msg;
+  el.style.display = 'block';
+}
+
+async function submitSignup(){
+  const form = new FormData();
+  form.append('email',      document.getElementById('authEmail').value.trim());
+  form.append('username',   document.getElementById('authUsername').value.trim());
+  form.append('first_name', document.getElementById('authFirst').value.trim());
+  form.append('last_name',  document.getElementById('authLast').value.trim());
+  form.append('password1',  document.getElementById('authPw').value);
+  form.append('password2',  document.getElementById('authPw2').value);
+  form.append('csrfmiddlewaretoken', getCsrf());
+
+  const btn = document.getElementById('authSubmitBtn');
+  btn.textContent = 'Creating account…';
+  btn.disabled = true;
+
+  try {
+    const r = await fetch("{% url 'signup' %}", {method:'POST', body:form});
+    const d = await r.json();
+    btn.disabled = false;
+    if(d.success){
+      // Move to step 2 of the multi-step onboarding (profile details)
+      goStep(2);
+    } else if(d.errors){
+      btn.textContent = 'Create Account ✦';
+      const msgs = Object.values(d.errors).flat().join('<br/>');
+      showError(msgs);
+    }
+  } catch(e){
+    btn.disabled = false;
+    btn.textContent = 'Create Account ✦';
+    showError('Network error. Please try again.');
+  }
+}
+
+async function submitSignin(){
+  const form = new FormData();
+  form.append('username',  document.getElementById('authUsername').value.trim());
+  form.append('password',  document.getElementById('authPw').value);
+  form.append('csrfmiddlewaretoken', getCsrf());
+
+  const btn = document.getElementById('authSubmitBtn');
+  btn.textContent = 'Signing in…';
+  btn.disabled = true;
+
+  try {
+    const r = await fetch("{% url 'signin' %}", {method:'POST', body:form});
+    const d = await r.json();
+    btn.disabled = false;
+    if(d.success){
+      window.location.href = "{% url 'app-shell' %}";
+    } else if(d.errors){
+      btn.textContent = 'Sign In →';
+      const msgs = Object.values(d.errors).flat().join('<br/>');
+      showError(msgs);
+    }
+  } catch(e){
+    btn.disabled = false;
+    btn.textContent = 'Sign In →';
+    showError('Network error. Please try again.');
+  }
+}
+
+function finaliseAccount(){
+  // Step 3 is profile/KYC data collected client-side only for the MVP.
+  // In production this would POST to /api/kyc/ before redirecting.
+  document.querySelectorAll('.auth-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('asSuccess').classList.add('active');
+  document.getElementById('authProg').style.width = '100%';
+  // Animate progress bar then redirect
+  setTimeout(()=>{ document.getElementById('redirectBar').style.width='100%' }, 100);
+  setTimeout(()=>{ window.location.href = "{% url 'app-shell' %}" }, 2400);
+}
+
+/* ═══════════════════════════════
+   PASSWORD STRENGTH
+═══════════════════════════════ */
+function checkStrength(v){
+  let sc=0;
+  if(v.length>=8)sc++;
+  if(v.length>=12)sc++;
+  if(/[A-Z]/.test(v)&&/[0-9]/.test(v))sc++;
+  if(/[^A-Za-z0-9]/.test(v))sc++;
+  ['sb1','sb2','sb3','sb4'].forEach((id,i)=>{
+    document.getElementById(id).style.background = i<sc
+      ? ['#dc2626','#f0c040','#16a34a','#16a34a'][Math.min(sc-1,3)]
+      : 'var(--bg3)';
+  });
+}
+function togglePw(id,btn){
+  const inp = document.getElementById(id);
+  const isText = inp.type === 'text';
+  inp.type = isText ? 'password' : 'text';
+  btn.textContent = isText ? '👁' : '🙈';
+}
+
+/* ═══════════════════════════════
+   LIVE PRICES (auth panel floaters + ticker)
+═══════════════════════════════ */
+function fmtP(p){
+  if(p>=1000) return '$'+p.toLocaleString(undefined,{maximumFractionDigits:0});
+  if(p>=1)    return '$'+p.toFixed(2);
+  return '$'+p.toFixed(5);
+}
+
+async function loadAuthPrices(){
+  try{
+    const r = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,solana&sparkline=false&price_change_percentage=24h');
+    const d = await r.json();
+    d.forEach(c=>{
+      const sym = c.id.substring(0,3); // bit, eth, sol
+      const pEl = document.getElementById('af-'+sym);
+      const cEl = document.getElementById('af-'+sym+'C');
+      if(pEl) pEl.textContent = fmtP(c.current_price);
+      if(cEl){
+        cEl.textContent = (c.price_change_percentage_24h>=0?'+':'')+c.price_change_percentage_24h.toFixed(2)+'%';
+        cEl.style.color = c.price_change_percentage_24h>=0?'#4ade80':'#f87171';
+      }
+      // also update landing page phone mockup
+      const lp = document.getElementById('lp-'+sym+'-p');
+      if(lp) lp.textContent = fmtP(c.current_price);
+    });
+  }catch(e){}
+}
+
+async function buildLPTicker(){
+  try{
+    const r = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,solana,binancecoin,ripple,cardano&sparkline=false&price_change_percentage=24h');
+    const d = await r.json();
+    const wrap = document.getElementById('lp-ticker');
+    const items = d.map(c=>`<div class="ti"><span class="ti-s">${c.symbol?.toUpperCase()}</span><span>${fmtP(c.current_price)}</span><span class="${c.price_change_percentage_24h>=0?'ti-u':'ti-d'}">${c.price_change_percentage_24h>=0?'+':''}${c.price_change_percentage_24h?.toFixed(2)}%</span></div>`).join('');
+    if(wrap) wrap.innerHTML = items+items;
+    // update phone mockup prices on landing
+    d.forEach(c=>{
+      const lp = document.getElementById('lp-'+c.id.substring(0,3)+'-p');
+      if(lp) lp.textContent = fmtP(c.current_price);
+    });
+  }catch(e){
+    const wrap = document.getElementById('lp-ticker');
+    if(wrap){
+      const fallback = ['BTC $83,200 +1.2%','ETH $3,100 +2.4%','SOL $145 +4.1%','BNB $380 +0.8%'];
+      const items = fallback.map(t=>`<div class="ti"><span class="ti-s">${t.split(' ')[0]}</span><span>${t.split(' ')[1]}</span><span class="ti-u">${t.split(' ')[2]}</span></div>`).join('');
+      wrap.innerHTML = items+items;
+    }
+  }
+}
+
+/* Boot */
+buildLPTicker();
+</script>
+</body>
+</html>

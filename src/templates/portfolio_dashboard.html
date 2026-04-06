@@ -1,0 +1,698 @@
+{% comment %}
+templates/portfolio_dashboard.html
+
+Three features wired to real Django data:
+  1. Balance Adjustment Log   — /api/portfolio/adjustments/
+  2. Asset Allocation Pie     — /api/portfolio/allocation/
+  3. Price Snapshot Sparklines — /api/portfolio/sparklines/
+{% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8"/>
+<meta name="csrf-token" content="{{ csrf_token }}"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>NexusX — My Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+/* ── Reset + tokens ────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#c8860a; --gold-l:#f0c040; --gold-bg:#fdf6e3; --gold-bd:#e8c96a;
+  --bg:#f7f6f2; --bg2:#fff; --bg3:#eeece6;
+  --surface:#fff; --surface2:#f4f2ec;
+  --text:#1a1814; --text2:#4a4740; --muted:#8a8680;
+  --border:#e2dfd6;
+  --up:#16a34a; --up-bg:#dcfce7;
+  --dn:#dc2626; --dn-bg:#fee2e2;
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:22px;
+  --shadow:0 2px 16px rgba(0,0,0,.08);
+  --shadow-lg:0 8px 40px rgba(0,0,0,.12);
+  --font:'Syne',sans-serif; --mono:'DM Mono',monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── Layout ─────────────────────────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  height:60px;background:rgba(247,246,242,.92);backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 32px;gap:16px;
+}
+.topbar-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo-mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--gold-l),var(--gold));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff}
+.logo-text{font-size:17px;font-weight:800;letter-spacing:-.4px;color:var(--text)}
+.logo-text span{color:var(--gold)}
+.topbar-portfolio{margin-left:auto}
+.portfolio-select{
+  background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-md);
+  padding:7px 12px;font-size:13px;font-family:var(--font);color:var(--text);
+  outline:none;cursor:pointer;
+}
+.topbar-user{
+  width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold-l),var(--gold));
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;
+}
+
+.page{max-width:1200px;margin:0 auto;padding:28px 32px 60px}
+
+/* ── Grids ───────────────────────────────────────────────── */
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.row-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:18px}
+
+/* ── Panel ───────────────────────────────────────────────── */
+.panel{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-xl);overflow:hidden}
+.panel-hd{
+  padding:18px 22px;border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+}
+.panel-title{font-size:14px;font-weight:700;letter-spacing:-.2px}
+.panel-sub{font-size:11px;font-family:var(--mono);color:var(--muted);margin-top:3px}
+.panel-bd{padding:20px 22px}
+.panel-bd-flush{padding:0}
+
+/* ── Eyebrow ─────────────────────────────────────────────── */
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+
+/* ── Badges ──────────────────────────────────────────────── */
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:99px;padding:3px 9px;font-size:10px;font-family:var(--mono);font-weight:500}
+.badge-up  {background:var(--up-bg);color:var(--up)}
+.badge-dn  {background:var(--dn-bg);color:var(--dn)}
+.badge-muted{background:var(--bg3);color:var(--muted);border:1px solid var(--border)}
+.badge-gold{background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-bd)}
+.live-dot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:6px;border-radius:var(--r-md);padding:8px 16px;font-size:12px;font-family:var(--font);font-weight:600;cursor:pointer;border:none;transition:all .18s}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--gold-bd);color:var(--gold)}
+.btn-gold{background:linear-gradient(135deg,var(--gold-l),var(--gold));color:#fff;box-shadow:0 2px 10px rgba(200,134,10,.22)}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(200,134,10,.32)}
+.btn-sm{padding:5px 11px;font-size:11px}
+
+/* ── Spinner / skeleton ──────────────────────────────────── */
+.spinner{width:18px;height:18px;border:2px solid rgba(200,134,10,.15);border-top-color:var(--gold-l);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.skeleton{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg2) 50%,var(--bg3) 75%);background-size:400px 100%;animation:shimmer 1.3s infinite;border-radius:6px}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+
+/* ════════════════════════════════════════════════
+   FEATURE 1 — BALANCE ADJUSTMENT LOG
+════════════════════════════════════════════════ */
+
+/* Filter bar */
+.adj-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filter-select{
+  background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-md);
+  padding:6px 10px;font-size:11px;font-family:var(--mono);color:var(--text2);
+  outline:none;cursor:pointer;transition:border-color .15s;
+}
+.filter-select:focus{border-color:var(--gold-bd)}
+
+/* Table */
+.adj-table{width:100%;border-collapse:collapse;font-size:12px}
+.adj-table th{
+  font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--muted);padding:10px 16px;text-align:left;
+  border-bottom:1px solid var(--border);white-space:nowrap;
+}
+.adj-table td{
+  padding:13px 16px;border-bottom:1px solid var(--border);
+  vertical-align:middle;color:var(--text2);
+}
+.adj-table tbody tr:last-child td{border-bottom:none}
+.adj-table tbody tr{transition:background .13s}
+.adj-table tbody tr:hover{background:var(--gold-bg)}
+
+/* Asset pill in table */
+.asset-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:99px;padding:3px 9px;
+  font-family:var(--mono);font-size:10px;font-weight:600;
+}
+.asset-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* Delta cell */
+.delta-credit{font-family:var(--mono);font-weight:700;color:var(--up)}
+.delta-debit {font-family:var(--mono);font-weight:700;color:var(--dn)}
+
+/* Description */
+.adj-desc{font-size:12px;color:var(--text);max-width:280px;line-height:1.4}
+.adj-desc-sub{font-size:10px;font-family:var(--mono);color:var(--muted);margin-top:2px}
+
+/* Type badge */
+.type-credit{background:var(--up-bg);color:var(--up);border-radius:99px;padding:2px 8px;font-size:10px;font-family:var(--mono);white-space:nowrap}
+.type-debit {background:var(--dn-bg);color:var(--dn);border-radius:99px;padding:2px 8px;font-size:10px;font-family:var(--mono);white-space:nowrap}
+
+/* Pagination */
+.pagination{display:flex;align-items:center;gap:8px;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--border)}
+.page-info{font-family:var(--mono);font-size:11px;color:var(--muted);margin-right:auto}
+.page-btn{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-md);padding:5px 12px;font-size:11px;font-family:var(--mono);cursor:pointer;transition:all .15s;color:var(--text2)}
+.page-btn:hover:not(:disabled){border-color:var(--gold-bd);color:var(--gold)}
+.page-btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* Empty state */
+.empty-state{text-align:center;padding:48px 20px;color:var(--muted);font-size:13px}
+.empty-icon{font-size:36px;display:block;margin-bottom:12px;opacity:.4}
+
+/* ════════════════════════════════════════════════
+   FEATURE 2 — ASSET ALLOCATION CHART
+════════════════════════════════════════════════ */
+
+.alloc-wrap{display:flex;gap:28px;align-items:center}
+.pie-wrap{position:relative;flex-shrink:0}
+#allocCanvas{display:block}
+.pie-center{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;pointer-events:none;
+}
+.pie-total{font-size:18px;font-weight:800;letter-spacing:-1px;color:var(--text);line-height:1}
+.pie-label{font-size:9px;font-family:var(--mono);color:var(--muted);letter-spacing:1px;margin-top:3px;text-transform:uppercase}
+
+.alloc-legend{flex:1;display:flex;flex-direction:column;gap:9px;min-width:0}
+.legend-row{display:flex;align-items:center;gap:9px;cursor:default}
+.legend-bar-bg{flex:1;height:5px;background:var(--bg3);border-radius:99px;overflow:hidden}
+.legend-bar-fill{height:5px;border-radius:99px;transition:width .6s ease}
+.legend-sym{font-weight:700;font-size:12px;color:var(--text);width:36px;flex-shrink:0}
+.legend-pct{font-family:var(--mono);font-size:11px;color:var(--text2);width:38px;text-align:right;flex-shrink:0}
+.legend-usd{font-family:var(--mono);font-size:10px;color:var(--muted);width:72px;text-align:right;flex-shrink:0}
+
+/* ════════════════════════════════════════════════
+   FEATURE 3 — PRICE SNAPSHOT SPARKLINES
+════════════════════════════════════════════════ */
+
+.sparklines-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+
+.spark-card{
+  background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-lg);
+  padding:14px 16px;transition:all .2s;cursor:default;
+}
+.spark-card:hover{border-color:var(--gold-bd);box-shadow:0 4px 16px rgba(200,134,10,.09);transform:translateY(-2px)}
+.spark-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.spark-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.spark-sym{font-size:13px;font-weight:700;color:var(--text)}
+.spark-name{font-size:10px;font-family:var(--mono);color:var(--muted)}
+.spark-canvas-wrap{height:44px;margin-bottom:10px}
+.spark-canvas-wrap canvas{width:100%;height:44px}
+.spark-footer{display:flex;justify-content:space-between;align-items:flex-end}
+.spark-price{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text)}
+.spark-chg{font-family:var(--mono);font-size:11px;font-weight:600}
+.spark-chg.up{color:var(--up)}
+.spark-chg.dn{color:var(--dn)}
+
+.time-tabs{display:flex;gap:0}
+.time-tab{
+  padding:5px 12px;font-size:10px;font-family:var(--mono);letter-spacing:.5px;
+  cursor:pointer;color:var(--muted);border:1px solid var(--border);
+  transition:all .15s;background:var(--surface2);
+}
+.time-tab:first-child{border-radius:var(--r-md) 0 0 var(--r-md)}
+.time-tab:last-child {border-radius:0 var(--r-md) var(--r-md) 0}
+.time-tab+.time-tab{border-left:none}
+.time-tab.active{background:var(--gold-bg);border-color:var(--gold-bd);color:var(--gold);font-weight:600}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media(min-width:601px) and (max-width:900px){
+  .row-2,.row-3{grid-template-columns:1fr}
+  .alloc-wrap{flex-direction:column}
+  .page{padding:24px}
+  .topbar{padding:0 20px;height:56px}
+  .sparklines-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+}
+@media(max-width:600px){
+  .page{padding:16px 12px}
+  .topbar{padding:0 12px;height:54px;flex-wrap:wrap;gap:8px}
+  .topbar-logo{font-size:14px}
+  .logo-mark{width:28px;height:28px;font-size:13px}
+  .topbar-portfolio{width:100%;order:2}
+  .portfolio-select{width:100%;font-size:11px}
+  .row-2,.row-3{grid-template-columns:1fr;gap:12px}
+  .panel-hd{padding:14px 16px}
+  .panel-bd{padding:14px 16px}
+  .panel-title{font-size:13px}
+  .adj-filters{gap:6px;flex-direction:column}
+  .filter-select{width:100%;font-size:10px}
+  .adj-table{font-size:11px}
+  .adj-table th{padding:8px 12px;font-size:8px}
+  .adj-table td{padding:10px 12px}
+  .alloc-wrap{flex-direction:column;gap:16px}
+  .alloc-legend{gap:6px}
+  .legend-row{gap:6px;font-size:11px}
+  .sparklines-grid{grid-template-columns:1fr}
+  .spark-card{padding:12px 14px}
+  .spark-sym{font-size:12px}
+  .spark-price{font-size:12px}
+  .time-tabs{width:100%}
+  .time-tab{flex:1;padding:6px 8px;font-size:9px}
+  .btn{padding:6px 12px;font-size:11px}
+  .pie-total{font-size:16px}
+  .pie-label{font-size:8px}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <a class="topbar-logo" href="/">
+    <div class="logo-mark">₿</div>
+    <div class="logo-text">NEXUS<span>X</span></div>
+  </a>
+
+  <div class="topbar-portfolio">
+    <select class="portfolio-select" id="portfolioSelect" onchange="switchPortfolio(this.value)">
+      {% for p in all_portfolios %}
+        <option value="{{ p.id }}" {% if p.id == portfolio.id %}selected{% endif %}>{{ p.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div style="display:flex;gap:4px">
+  <a href="{% url 'portfolio-dashboard' %}" style="padding:6px 14px;border-radius:var(--r-md);font-size:12px;font-weight:600;color:var(--gold);background:var(--gold-bg);border:1px solid var(--gold-bd);text-decoration:none">Portfolio</a>
+  <a href="{% url 'wallet' %}"    style="padding:6px 14px;border-radius:var(--r-md);font-size:12px;font-weight:600;color:var(--text2);text-decoration:none">Wallet</a>
+</div>
+
+  <div class="topbar-user">{{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}</div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+
+
+  <div class="row-2" style="margin-bottom:20px">
+
+    <!-- ── SPARKLINES PANEL ──────────────────────── -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div>
+          <div class="eyebrow">Price Trends</div>
+          <div class="panel-title">24h Sparklines</div>
+          <div class="panel-sub">Live data from your held assets</div>
+        </div>
+        <div class="time-tabs" id="timeTabs">
+          <div class="time-tab active" onclick="setSparkHours(this,24)">24H</div>
+          <div class="time-tab" onclick="setSparkHours(this,48)">48H</div>
+          <div class="time-tab" onclick="setSparkHours(this,168)">7D</div>
+        </div>
+      </div>
+      <div class="panel-bd">
+        <div class="sparklines-grid" id="sparklinesGrid">
+          <!-- JS rendered -->
+          <div style="grid-column:1/-1;text-align:center;padding:28px;color:var(--muted)">
+            <span class="spinner"></span> Loading sparklines…
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ALLOCATION PIE ─────────────────────────── -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div>
+          <div class="eyebrow">Allocation</div>
+          <div class="panel-title">Asset Distribution</div>
+          <div class="panel-sub">By current USD value</div>
+        </div>
+        <div class="badge badge-gold"><span class="live-dot"></span>Live</div>
+      </div>
+      <div class="panel-bd">
+        <div class="alloc-wrap">
+          <div class="pie-wrap">
+            <canvas id="allocCanvas" width="160" height="160"></canvas>
+            <div class="pie-center">
+              <div class="pie-total" id="pieTotalVal">…</div>
+              <div class="pie-label">Total</div>
+            </div>
+          </div>
+          <div class="alloc-legend" id="allocLegend">
+            <!-- JS rendered -->
+            {% for _ in "xxx" %}
+            <div class="legend-row">
+              <div class="skeleton" style="width:32px;height:12px"></div>
+              <div class="legend-bar-bg"><div class="skeleton legend-bar-fill" style="width:100%;height:5px"></div></div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 3 — BALANCE ADJUSTMENT LOG
+  ══════════════════════════════════════════════ -->
+  <div class="panel">
+    <div class="panel-hd" style="flex-wrap:wrap;gap:12px">
+      <div>
+        <div class="eyebrow">Ledger</div>
+        <div class="panel-title">Balance Adjustment Log</div>
+        <div class="panel-sub">A transparent record of every balance change</div>
+      </div>
+      <div class="adj-filters">
+        <!-- Asset filter -->
+        <select class="filter-select" id="filterAsset" onchange="loadAdjustments(1)">
+          <option value="">All assets</option>
+          {% for h in portfolio.holdings.all %}
+            <option value="{{ h.asset.symbol }}">{{ h.asset.symbol }}</option>
+          {% endfor %}
+        </select>
+
+        <!-- Direction filter -->
+        <select class="filter-select" id="filterDir" onchange="loadAdjustments(1)">
+          <option value="">All directions</option>
+          <option value="credit">Credits only</option>
+          <option value="debit">Debits only</option>
+        </select>
+
+        <!-- Type filter -->
+        <select class="filter-select" id="filterType" onchange="loadAdjustments(1)">
+          <option value="">All types</option>
+          <option value="staking_reward">Staking Reward</option>
+          <option value="trade_buy">Trade — Buy</option>
+          <option value="trade_sell">Trade — Sell</option>
+          <option value="deposit">Deposit</option>
+          <option value="withdrawal">Withdrawal</option>
+          <option value="fee_deduction">Fee Deduction</option>
+          <option value="system_correction">System Correction</option>
+          <option value="admin_adjustment">Admin Adjustment</option>
+        </select>
+
+        <button class="btn btn-ghost btn-sm" onclick="resetFilters()">Reset</button>
+      </div>
+    </div>
+
+    <div class="panel-bd-flush" id="adjTableWrap">
+      <!-- JS rendered -->
+      <div style="text-align:center;padding:40px;color:var(--muted)">
+        <span class="spinner"></span> Loading adjustment log…
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+/* ── State ───────────────────────────────────────────────── */
+const PORTFOLIO_ID = "{{ portfolio.id }}";
+let sparkHours     = 24;
+let adjPage        = 1;
+
+/* ── Bootstrap ───────────────────────────────────────────── */
+document.addEventListener("DOMContentLoaded", () => {
+  loadAllocation();
+  loadSparklines(sparkHours);
+  loadAdjustments(1);
+
+  // Sparklines refresh every 30 seconds — matches typical price feed cadence
+  setInterval(() => loadSparklines(sparkHours), 30_000);
+
+  // Allocation re-prices every 60 seconds (holdings don't change often,
+  // but the USD values shift with price)
+  setInterval(() => loadAllocation(), 60_000);
+
+  // Adjustment log polls every 15 seconds so new credits/debits
+  // (staking rewards, trade fills) appear without a page refresh
+  setInterval(() => loadAdjustments(adjPage), 15_000);
+});
+
+/* ── Portfolio switcher ──────────────────────────────────── */
+function switchPortfolio(id) {
+  window.location.href = `?portfolio=${id}`;
+}
+
+/* ════════════════════════════════════════════════
+   FEATURE 2 — ALLOCATION PIE
+════════════════════════════════════════════════ */
+
+async function loadAllocation() {
+  const res  = await fetch(`/api/portfolio/allocation/?portfolio=${PORTFOLIO_ID}`);
+  const data = await res.json();
+  renderPie(data.slices, data.total_usd);
+  renderLegend(data.slices, data.total_usd);
+}
+
+function renderPie(slices, totalUsd) {
+  const canvas = document.getElementById("allocCanvas");
+  const ctx    = canvas.getContext("2d");
+  const W = 160, H = 160, cx = W / 2, cy = H / 2;
+  const rO = 68, rI = 46;
+
+  canvas.width = W; canvas.height = H;
+  ctx.clearRect(0, 0, W, H);
+
+  if (!slices.length) {
+    ctx.fillStyle = "#eeece6";
+    ctx.beginPath(); ctx.arc(cx, cy, rO, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.beginPath(); ctx.arc(cx, cy, rI, 0, Math.PI * 2); ctx.fill();
+    document.getElementById("pieTotalVal").textContent = "$0";
+    return;
+  }
+
+  let start = -Math.PI / 2;
+  slices.forEach(s => {
+    const angle = (s.pct / 100) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, rO, start, start + angle);
+    ctx.arc(cx, cy, rI, start + angle, start, true);
+    ctx.closePath();
+    ctx.fillStyle = s.color;
+    ctx.fill();
+    start += angle + 0.012;
+  });
+
+  /* Inner white circle */
+  ctx.beginPath(); ctx.arc(cx, cy, rI - 2, 0, Math.PI * 2);
+  ctx.fillStyle = "#fff"; ctx.fill();
+
+  /* Total label */
+  document.getElementById("pieTotalVal").textContent = fmtUsd(totalUsd);
+}
+
+function renderLegend(slices, totalUsd) {
+  const legend = document.getElementById("allocLegend");
+  if (!slices.length) {
+    legend.innerHTML = '<div class="empty-state">No holdings found</div>';
+    return;
+  }
+  legend.innerHTML = slices.map(s => `
+    <div class="legend-row" title="${s.name}: $${fmtNum(s.value_usd)} (${s.pct}%)">
+      <span class="legend-sym">${s.symbol}</span>
+      <div class="legend-bar-bg">
+        <div class="legend-bar-fill" style="width:${s.pct}%;background:${s.color}"></div>
+      </div>
+      <span class="legend-pct">${s.pct}%</span>
+      <span class="legend-usd">${fmtUsd(s.value_usd)}</span>
+    </div>`).join("");
+}
+
+/* ════════════════════════════════════════════════
+   FEATURE 3 — SPARKLINES
+════════════════════════════════════════════════ */
+
+function setSparkHours(btn, h) {
+  document.querySelectorAll(".time-tab").forEach(t => t.classList.remove("active"));
+  btn.classList.add("active");
+  sparkHours = h;
+  loadSparklines(h);
+}
+
+async function loadSparklines(hours) {
+  const grid = document.getElementById("sparklinesGrid");
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:28px;color:var(--muted)"><span class="spinner"></span></div>';
+
+  const res  = await fetch(`/api/portfolio/sparklines/?portfolio=${PORTFOLIO_ID}&hours=${hours}`);
+  const data = await res.json();
+
+  if (!data.sparklines.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><span class="empty-icon">📊</span>No price data found for your holdings.</div>';
+    return;
+  }
+
+  grid.innerHTML = data.sparklines.map(s =>
+    `<div class="spark-card">
+      <div class="spark-header">
+        <span class="spark-dot" style="background:${s.color}"></span>
+        <div>
+          <div class="spark-sym">${s.symbol}</div>
+          <div class="spark-name">${s.name}</div>
+        </div>
+      </div>
+      <div class="spark-canvas-wrap">
+        <canvas id="spark_${s.symbol}" width="200" height="44"></canvas>
+      </div>
+      <div class="spark-footer">
+        <span class="spark-price">${fmtPrice(parseFloat(s.current_price))}</span>
+        <span class="spark-chg ${s.is_up ? 'up' : 'dn'}">${s.is_up ? '+' : ''}${s.change_pct}%</span>
+      </div>
+    </div>`
+  ).join("");
+
+  /* Draw each sparkline after elements are in the DOM */
+  data.sparklines.forEach(s => {
+    const canvas = document.getElementById(`spark_${s.symbol}`);
+    if (!canvas || !s.points.length) return;
+    drawSparkline(canvas, s.points.map(p => parseFloat(p.p)), s.color, s.is_up);
+  });
+}
+
+function drawSparkline(canvas, prices, color, isUp) {
+  const W = canvas.offsetWidth || 200, H = 44;
+  canvas.width = W; canvas.height = H;
+  const ctx  = canvas.getContext("2d");
+  const min  = Math.min(...prices), max = Math.max(...prices);
+  const rng  = max - min || 1;
+  const pad  = 3;
+  const toX  = i  => pad + (i / (prices.length - 1)) * (W - pad * 2);
+  const toY  = v  => H - pad - ((v - min) / rng) * (H - pad * 2);
+  const pts  = prices.map((p, i) => ({ x: toX(i), y: toY(p) }));
+
+  const lineColor = isUp ? "#16a34a" : "#dc2626";
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, isUp ? "rgba(22,163,74,.18)"  : "rgba(220,38,38,.15)");
+  grad.addColorStop(1, isUp ? "rgba(22,163,74,.01)"  : "rgba(220,38,38,.01)");
+
+  /* Fill */
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) {
+    const cx = (pts[i-1].x + pts[i].x) / 2;
+    ctx.bezierCurveTo(cx, pts[i-1].y, cx, pts[i].y, pts[i].x, pts[i].y);
+  }
+  ctx.lineTo(W - pad, H); ctx.lineTo(pad, H); ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
+
+  /* Line */
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) {
+    const cx = (pts[i-1].x + pts[i].x) / 2;
+    ctx.bezierCurveTo(cx, pts[i-1].y, cx, pts[i].y, pts[i].x, pts[i].y);
+  }
+  ctx.strokeStyle = lineColor; ctx.lineWidth = 1.5; ctx.stroke();
+
+  /* End dot */
+  const last = pts[pts.length - 1];
+  ctx.beginPath(); ctx.arc(last.x, last.y, 3, 0, Math.PI * 2);
+  ctx.fillStyle = lineColor; ctx.fill();
+}
+
+/* ════════════════════════════════════════════════
+   FEATURE 1 — ADJUSTMENT LOG
+════════════════════════════════════════════════ */
+
+async function loadAdjustments(page) {
+  adjPage = page;
+  const wrap = document.getElementById("adjTableWrap");
+  wrap.innerHTML = '<div style="text-align:center;padding:36px;color:var(--muted)"><span class="spinner"></span></div>';
+
+  const asset = document.getElementById("filterAsset").value;
+  const dir   = document.getElementById("filterDir").value;
+  const type  = document.getElementById("filterType").value;
+
+  const params = new URLSearchParams({ page, page_size: 15 });
+  if (asset) params.set("asset",     asset);
+  if (dir)   params.set("direction", dir);
+  if (type)  params.set("type",      type);
+
+  const res  = await fetch(`/api/portfolio/adjustments/?${params}`);
+  const data = await res.json();
+
+  if (!data.results.length) {
+    wrap.innerHTML = `
+      <div class="empty-state">
+        <span class="empty-icon">📋</span>
+        No adjustment records match your filters.
+      </div>`;
+    return;
+  }
+
+  const rows = data.results.map(r => {
+    const isCredit = r.direction === "credit";
+    const sign     = isCredit ? "+" : "−";
+    const deltaStr = `${sign}${formatDelta(r.delta)} ${r.asset_symbol}`;
+    return `
+      <tr>
+        <td>
+          <span class="asset-pill">
+            <span class="asset-dot" style="background:${r.asset_color}"></span>
+            ${r.asset_symbol}
+          </span>
+        </td>
+        <td>
+          <span class="${isCredit ? 'type-credit' : 'type-debit'}">${r.type_label}</span>
+        </td>
+        <td>
+          <div class="adj-desc">${r.description}</div>
+          ${r.transaction_id ? `<div class="adj-desc-sub">TX ${r.transaction_id.slice(0,8)}…</div>` : ''}
+        </td>
+        <td class="${isCredit ? 'delta-credit' : 'delta-debit'}" style="white-space:nowrap">
+          ${deltaStr}
+        </td>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap">
+          ${formatDelta(r.running_balance)} ${r.asset_symbol}
+        </td>
+        ${r.usd_value ? `<td style="font-family:var(--mono);font-size:11px;color:var(--text2)">${fmtUsd(parseFloat(r.usd_value))}</td>` : '<td>—</td>'}
+        <td style="font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap" title="${r.created_at}">
+          ${r.created_at_human}
+        </td>
+      </tr>`;
+  }).join("");
+
+  wrap.innerHTML = `
+    <table class="adj-table">
+      <thead>
+        <tr>
+          <th>Asset</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Change</th>
+          <th>Balance After</th>
+          <th>USD Value</th>
+          <th>When</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="pagination">
+      <span class="page-info">
+        Page ${data.page} of ${data.num_pages} &nbsp;·&nbsp; ${data.total} records
+      </span>
+      <button class="page-btn" onclick="loadAdjustments(${data.page - 1})" ${data.has_prev ? '' : 'disabled'}>← Prev</button>
+      <button class="page-btn" onclick="loadAdjustments(${data.page + 1})" ${data.has_next ? '' : 'disabled'}>Next →</button>
+    </div>`;
+}
+
+function resetFilters() {
+  document.getElementById("filterAsset").value = "";
+  document.getElementById("filterDir").value   = "";
+  document.getElementById("filterType").value  = "";
+  loadAdjustments(1);
+}
+
+/* ── Formatting helpers ──────────────────────────────────── */
+function fmtUsd(n) {
+  if (n >= 1e9)  return "$" + (n / 1e9).toFixed(2) + "B";
+  if (n >= 1e6)  return "$" + (n / 1e6).toFixed(2) + "M";
+  if (n >= 1000) return "$" + n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+  return "$" + n.toFixed(2);
+}
+function fmtNum(n) { return n.toLocaleString(undefined, { maximumFractionDigits: 2 }); }
+function fmtPrice(p) {
+  if (p >= 1000) return "$" + p.toLocaleString(undefined, { maximumFractionDigits: 0 });
+  if (p >= 1)    return "$" + p.toFixed(2);
+  return "$" + p.toFixed(6);
+}
+function formatDelta(raw) {
+  const n = Math.abs(parseFloat(raw));
+  if (n >= 1e6) return n.toFixed(2);
+  if (n >= 1)   return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+  return n.toFixed(8).replace(/\.?0+$/, "");
+}
+</script>
+</body>
+</html>

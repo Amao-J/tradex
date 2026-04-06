@@ -1,0 +1,847 @@
+{% comment %}
+templates/portfolio/wallet.html
+Desktop: sidebar nav + 3-column layout (network/QR/history side by side)
+Mobile: original single-column sheet layout unchanged
+{% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="csrf-token" content="{{ csrf_token }}"/>
+<title>NexusX — Wallet</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#c8860a;--gold-l:#f0c040;--gold-bg:#fdf8ec;--gold-br:#e8c96a;
+  --bg:#f7f6f2;--bg2:#ffffff;--bg3:#eeece6;--surf:#ffffff;--surf2:#f4f2ec;
+  --txt:#1a1814;--txt2:#4a4740;--muted:#8a8680;--border:#e2dfd6;
+  --up:#16a34a;--upbg:#dcfce7;--dn:#dc2626;--dnbg:#fee2e2;
+  --dark:#1a1612;--dark2:#2a1f08;
+  --sh:0 2px 12px rgba(0,0,0,.07);--sh2:0 6px 32px rgba(0,0,0,.11);
+  --r:12px;--r2:18px;
+  --sidebar-w:220px;
+}
+html,body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+button{font-family:'Syne',sans-serif;cursor:pointer}
+input,select{font-family:'Syne',sans-serif}
+a{text-decoration:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes toastOut{from{opacity:1}to{opacity:0;transform:translateX(-50%) translateY(10px)}}
+
+/* ══════════════════════════════════════════
+   MOBILE LAYOUT  (≤ 900px — original design)
+══════════════════════════════════════════ */
+.wallet-shell{max-width:480px;margin:0 auto;background:var(--bg2);min-height:100vh;box-shadow:0 0 60px rgba(0,0,0,.12)}
+
+/* mobile topnav */
+.topnav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;max-width:480px;margin:0 auto}
+.tn-back{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--txt2);cursor:pointer}
+.tn-back:hover{color:var(--gold)}
+.tn-title{font-size:17px;font-weight:700;letter-spacing:-.4px}
+.tn-right{display:flex;align-items:center;gap:5px;background:var(--upbg);border-radius:20px;padding:4px 10px}
+.tn-secure{font-size:10px;font-family:'DM Mono',monospace;color:var(--up);font-weight:600}
+
+/* hero */
+.wallet-hero{background:linear-gradient(135deg,#0f0e18,#1a1825,#0d1a12);padding:28px 20px 24px;position:relative;overflow:hidden}
+.wallet-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(240,192,64,.12),transparent)}
+.wh-lbl{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1.5px;color:rgba(255,255,255,.4);text-transform:uppercase;margin-bottom:6px;position:relative;z-index:1}
+.wh-val{font-size:36px;font-weight:800;color:#fff;letter-spacing:-2px;line-height:1;position:relative;z-index:1}
+.wh-sub{font-size:12px;color:rgba(255,255,255,.4);margin-top:4px;position:relative;z-index:1}
+.wallet-quick{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:16px;background:linear-gradient(0deg,var(--bg2) 0%,transparent 100%)}
+.wq-btn{display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px 8px;cursor:pointer;transition:all .18s}
+.wq-btn:hover{background:rgba(255,255,255,.14);border-color:rgba(240,192,64,.3)}
+.wq-icon{font-size:22px;line-height:1}
+.wq-label{font-size:9px;font-family:'DM Mono',monospace;color:rgba(255,255,255,.5);letter-spacing:.5px;text-transform:uppercase}
+
+/* tabs */
+.wallet-tabs{display:flex;gap:0;margin:0 16px 0;background:var(--surf2);border-radius:var(--r);padding:4px}
+.wtab{flex:1;padding:9px;text-align:center;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;color:var(--muted)}
+.wtab.active{background:var(--bg2);color:var(--txt);box-shadow:var(--sh)}
+.wpanel{padding:16px;display:none}
+.wpanel.active{display:block}
+
+/* network selector */
+.net-selector{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.net-btn{background:var(--surf2);border:1.5px solid var(--border);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--txt2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px}
+.net-btn.active{background:var(--gold-bg);border-color:var(--gold-br);color:var(--gold)}
+.net-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+
+/* QR */
+.qr-section{background:var(--surf2);border:1.5px solid var(--border);border-radius:var(--r2);padding:22px;text-align:center;margin-bottom:16px}
+.qr-net-badge{display:inline-flex;align-items:center;gap:5px;background:var(--gold-bg);border:1px solid var(--gold-br);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;font-family:'DM Mono',monospace;color:var(--gold);margin-bottom:14px}
+.qr-box{width:180px;height:180px;margin:0 auto 16px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.qr-corners{position:absolute;inset:0;pointer-events:none}
+.qr-corner{position:absolute;width:22px;height:22px;border-color:var(--gold);border-style:solid}
+.qr-corner.tl{top:8px;left:8px;border-width:3px 0 0 3px;border-radius:4px 0 0 0}
+.qr-corner.tr{top:8px;right:8px;border-width:3px 3px 0 0;border-radius:0 4px 0 0}
+.qr-corner.bl{bottom:8px;left:8px;border-width:0 0 3px 3px;border-radius:0 0 0 4px}
+.qr-corner.br{bottom:8px;right:8px;border-width:0 3px 3px 0;border-radius:0 0 4px 0}
+.qr-addr-wrap{background:var(--bg3);border-radius:var(--r);padding:12px 14px;margin-top:12px;display:flex;align-items:center;gap:10px}
+.qr-addr{font-size:11px;font-family:'DM Mono',monospace;color:var(--txt2);word-break:break-all;flex:1;text-align:left;line-height:1.5}
+.copy-btn{background:linear-gradient(135deg,var(--gold-l),var(--gold));border:none;color:#fff;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;flex-shrink:0;transition:all .15s}
+.copy-btn:hover{transform:scale(1.04)}
+.deposit-notice{background:#fef3c7;border:1px solid #fcd34d;border-radius:var(--r);padding:12px 14px;margin-top:12px;font-size:12px;color:#92400e;line-height:1.6}
+
+/* sim deposit */
+.sim-box{background:var(--upbg);border:1.5px solid rgba(22,163,74,.2);border-radius:var(--r2);padding:18px;margin-top:16px}
+.sim-box-title{font-size:14px;font-weight:700;color:var(--up);margin-bottom:4px}
+.sim-box-sub{font-size:12px;color:var(--txt2);margin-bottom:14px;line-height:1.6}
+.sim-input-wrap{position:relative;margin-bottom:12px}
+.sim-input{width:100%;background:var(--bg2);border:1.5px solid rgba(22,163,74,.25);border-radius:var(--r);padding:13px 60px 13px 14px;font-size:16px;font-weight:700;color:var(--txt);outline:none;transition:border .18s}
+.sim-input:focus{border-color:rgba(22,163,74,.5)}
+.sim-input-tag{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;font-family:'DM Mono',monospace;color:var(--muted)}
+.preset-amts{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.pa{background:var(--bg2);border:1px solid rgba(22,163,74,.25);border-radius:8px;padding:6px 13px;font-size:12px;font-weight:600;color:var(--up);cursor:pointer;transition:all .15s}
+.pa:hover{background:var(--upbg);border-color:var(--up)}
+.dep-preview{background:rgba(22,163,74,.08);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;display:none}
+.dp-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
+.dp-row:last-child{margin-bottom:0}
+.dp-k{color:var(--muted)}.dp-v{font-family:'DM Mono',monospace;font-weight:600}
+.btn-confirm-dep{width:100%;padding:14px;background:linear-gradient(135deg,#4ade80,#16a34a);border:none;color:#fff;border-radius:var(--r);font-size:14px;font-weight:700;transition:all .2s}
+.btn-confirm-dep:hover{transform:translateY(-1px)}
+.btn-confirm-dep:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* withdraw */
+.wf-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.wf-label{font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.8px;color:var(--muted);text-transform:uppercase}
+.wf-input{width:100%;background:var(--surf2);border:1.5px solid var(--border);border-radius:var(--r);padding:13px 14px;font-size:14px;font-weight:600;color:var(--txt);outline:none;transition:all .18s}
+.wf-input:focus{border-color:var(--gold-br);background:var(--gold-bg)}
+.bal-note{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg3);border-radius:var(--r);font-size:12px;color:var(--txt2);margin-bottom:14px}
+.bal-note b{font-family:'DM Mono',monospace;font-weight:700}
+.quick-amts{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.qa{background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--txt2);cursor:pointer;transition:all .15s}
+.qa:hover{border-color:var(--gold-br);color:var(--gold)}
+.wd-summary{background:var(--bg3);border-radius:var(--r);padding:14px;margin-bottom:14px;display:none}
+.ws-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:7px}
+.ws-row:last-child{margin-bottom:0;padding-top:8px;border-top:1px solid var(--border);font-weight:700}
+.ws-k{color:var(--muted)}.ws-v{font-family:'DM Mono',monospace;font-weight:600}
+.wd-warning{background:var(--dnbg);border:1px solid rgba(220,38,38,.2);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--dn);line-height:1.6}
+.btn-wd{width:100%;padding:14px;background:linear-gradient(135deg,#f87171,#dc2626);border:none;color:#fff;border-radius:var(--r);font-size:14px;font-weight:700;transition:all .2s}
+.btn-wd:hover{transform:translateY(-1px)}
+.btn-wd:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* history */
+.wh-group-lbl{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;padding:14px 16px 6px;background:var(--bg3)}
+.wh-row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--bg3)}
+.whr-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.whr-dep .whr-icon{background:var(--upbg)}.whr-wd .whr-icon{background:var(--dnbg)}
+.whr-info{flex:1}.whr-type{font-size:13px;font-weight:700}
+.whr-net{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px}
+.whr-right{text-align:right}
+.whr-amt{font-size:13px;font-weight:700;font-family:'DM Mono',monospace}
+.whr-date{font-size:10px;color:var(--muted);margin-top:2px}
+.whr-status{display:inline-block;border-radius:20px;padding:2px 8px;font-size:10px;font-family:'DM Mono',monospace;margin-top:3px;font-weight:600}
+.s-completed{background:var(--upbg);color:var(--up)}.s-processing{background:rgba(99,126,234,.12);color:#627eea}.s-pending{background:#fef3c7;color:#d97706}
+
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--txt);color:#fff;border-radius:var(--r);padding:12px 22px;font-size:13px;font-weight:600;z-index:9999;white-space:nowrap;box-shadow:var(--sh2);animation:toastIn .3s ease;pointer-events:none}
+.toast.success{background:#16a34a}.toast.error{background:#dc2626}.toast.info{background:var(--gold)}
+
+/* ══════════════════════════════════════════
+   DESKTOP LAYOUT  (> 900px)
+══════════════════════════════════════════ */
+@media(min-width:901px){
+  body{background:var(--bg)}
+
+  /* Sidebar */
+  .desktop-sidebar{
+    width:var(--sidebar-w);position:fixed;left:0;top:0;bottom:0;
+    background:var(--dark);z-index:200;
+    border-right:1px solid rgba(255,255,255,.06);
+    display:flex;flex-direction:column;
+  }
+  .ds-logo{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px}
+  .ds-lm{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--gold-l),var(--gold));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff}
+  .ds-lt{font-size:17px;font-weight:800;letter-spacing:-.4px;color:#f0f0e8}
+  .ds-lt span{color:var(--gold-l)}
+  .ds-live{display:flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.3);margin-top:2px}
+  .ds-live span{width:5px;height:5px;border-radius:50%;background:#4ade80;animation:pulse 1.5s infinite}
+  .ds-nav{padding:16px 10px;flex:1;display:flex;flex-direction:column;gap:2px}
+  .ds-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;cursor:pointer;color:rgba(255,255,255,.45);font-size:13px;font-weight:600;transition:all .15s;text-decoration:none}
+  .ds-item:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.8)}
+  .ds-item.active{background:rgba(240,192,64,.12);color:var(--gold-l);font-weight:700}
+  .ds-item-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+  .ds-divider{height:1px;background:rgba(255,255,255,.06);margin:10px 10px}
+  .ds-user{padding:16px 14px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px}
+  .ds-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold-l),var(--gold));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0}
+  .ds-uname{font-size:12px;font-weight:700;color:#f0f0e8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ds-uemail{font-size:10px;font-family:'DM Mono',monospace;color:rgba(255,255,255,.3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ds-logout{margin-left:auto;font-size:10px;color:rgba(255,255,255,.25);cursor:pointer;flex-shrink:0;transition:color .15s}
+  .ds-logout:hover{color:#f87171}
+
+  /* Hide mobile elements */
+  .topnav,.bnav-placeholder{display:none!important}
+  .wallet-shell{max-width:none;box-shadow:none;background:transparent}
+
+  /* Desktop wrapper */
+  .desktop-main{margin-left:var(--sidebar-w);min-height:100vh;background:var(--bg)}
+
+  /* Desktop topbar */
+  .desktop-topbar{
+    position:sticky;top:0;z-index:100;height:62px;
+    background:rgba(247,246,242,.94);backdrop-filter:blur(18px);
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;padding:0 28px;gap:16px;
+  }
+  .dt-title{font-size:16px;font-weight:700;letter-spacing:-.3px}
+  .dt-right{display:flex;align-items:center;gap:12px;margin-left:auto}
+  .dt-secure{display:flex;align-items:center;gap:6px;background:var(--upbg);border:1px solid rgba(22,163,74,.2);border-radius:20px;padding:5px 12px;font-size:11px;font-family:'DM Mono',monospace;color:var(--up);font-weight:600}
+  .dt-secure span{width:6px;height:6px;border-radius:50%;background:var(--up);animation:pulse 1.5s infinite}
+
+  /* Desktop hero — full width banner */
+  .wallet-hero{
+    background:linear-gradient(135deg,#0f0e18,#1a1825 50%,#0d1a12);
+    padding:32px 36px 28px;border-radius:0;
+  }
+  .wh-val{font-size:48px;letter-spacing:-3px}
+  .wallet-quick{
+    display:flex;gap:12px;
+    padding:22px 36px;
+    background:var(--bg2);
+    border-bottom:1px solid var(--border);
+  }
+  .wq-btn{
+    flex:0 0 auto;flex-direction:row;align-items:center;gap:8px;
+    background:var(--surf2);border:1.5px solid var(--border);border-radius:var(--r);
+    padding:11px 18px;
+    color:var(--txt2);font-size:13px;font-weight:600;
+  }
+  .wq-btn:hover{background:var(--gold-bg);border-color:var(--gold-br);color:var(--gold)}
+  .wq-icon{font-size:16px}
+  .wq-label{font-size:13px;font-family:var(--font);text-transform:none;letter-spacing:0;color:inherit}
+
+  /* Desktop tab bar */
+  .wallet-tabs{
+    display:flex;margin:0;
+    background:transparent;
+    border-bottom:1px solid var(--border);
+    border-radius:0;padding:0 36px;gap:0;
+  }
+  .wtab{
+    flex:0 0 auto;padding:14px 20px;border-radius:0;font-size:13px;
+    border-bottom:2px solid transparent;margin-bottom:-1px;color:var(--muted);
+    background:transparent;box-shadow:none;
+  }
+  .wtab.active{background:transparent;color:var(--gold);border-bottom-color:var(--gold);box-shadow:none}
+
+  /* Desktop panel layout — 3 cols for deposit, 2 for withdraw/history */
+  .wpanel{padding:0;display:none}
+  .wpanel.active{display:block}
+
+  .desktop-deposit-grid{
+    display:grid;
+    grid-template-columns:260px 1fr 320px;
+    gap:0;
+    min-height:calc(100vh - 250px);
+  }
+  .ddg-networks{
+    padding:24px 20px;
+    border-right:1px solid var(--border);
+    background:var(--bg2);
+  }
+  .ddg-qr{
+    padding:32px 36px;
+    background:var(--bg);
+    display:flex;flex-direction:column;align-items:center;
+  }
+  .ddg-sim{
+    padding:24px 20px;
+    border-left:1px solid var(--border);
+    background:var(--bg2);
+    overflow-y:auto;
+  }
+
+  /* Desktop network buttons — vertical list */
+  .net-selector{flex-direction:column;gap:8px;margin-bottom:0}
+  .net-btn{width:100%;border-radius:var(--r);padding:12px 14px;font-size:13px}
+
+  /* Desktop QR — larger */
+  .qr-section{background:transparent;border:none;padding:0;margin-bottom:0;width:100%;max-width:380px}
+  .qr-box{width:220px;height:220px}
+  .qr-box canvas{width:220px;height:220px}
+
+  /* Desktop withdraw/history — two-column */
+  .desktop-wd-grid{
+    display:grid;grid-template-columns:1fr 360px;
+    gap:0;min-height:calc(100vh - 250px);
+  }
+  .dwg-form{padding:32px 36px;background:var(--bg)}
+  .dwg-info{padding:24px 20px;border-left:1px solid var(--border);background:var(--bg2)}
+
+  .desktop-hist-grid{
+    display:grid;grid-template-columns:1fr 320px;
+    gap:0;min-height:calc(100vh - 250px);
+  }
+  .dhg-list{background:var(--bg2)}
+  .dhg-summary{
+    padding:24px 20px;border-left:1px solid var(--border);background:var(--bg);
+  }
+
+  /* Stat card in sidebar panels */
+  .stat-card{background:var(--surf2);border:1.5px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:12px}
+  .stat-card-lbl{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .stat-card-val{font-size:22px;font-weight:800;letter-spacing:-.8px;color:var(--txt)}
+  .stat-card-sub{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);margin-top:4px}
+
+  /* How-it-works steps */
+  .how-step{display:flex;gap:12px;margin-bottom:16px;align-items:flex-start}
+  .how-num{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--gold-l),var(--gold));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+  .how-content h4{font-size:13px;font-weight:700;margin-bottom:3px}
+  .how-content p{font-size:12px;color:var(--txt2);line-height:1.6}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     DESKTOP SIDEBAR
+══════════════════════════════════════════ -->
+<div class="desktop-sidebar">
+  <div class="ds-logo">
+    <div class="ds-lm">₿</div>
+    <div>
+      <div class="ds-lt">NEXUS<span>X</span></div>
+      <div class="ds-live"><span></span>LIVE MARKETS</div>
+    </div>
+  </div>
+  <nav class="ds-nav">
+    <a class="ds-item" href="{% url 'app-shell' %}"><span class="ds-item-icon">◈</span>Markets</a>
+    <a class="ds-item" href="{% url 'app-shell' %}"><span class="ds-item-icon">⚡</span>Trade</a>
+    <a class="ds-item" href="{% url 'app-shell' %}"><span class="ds-item-icon">🔒</span>Staking</a>
+    <a class="ds-item" href="{% url 'portfolio-dashboard' %}"><span class="ds-item-icon">◎</span>Portfolio</a>
+    <a class="ds-item" href="{% url 'app-shell' %}"><span class="ds-item-icon">◷</span>History</a>
+    <div class="ds-divider"></div>
+    <a class="ds-item active" href="{% url 'wallet' %}"><span class="ds-item-icon">💳</span>Wallet</a>
+    <a class="ds-item" href="{% url 'portfolio-dashboard' %}"><span class="ds-item-icon">📊</span>Dashboard</a>
+  </nav>
+  <div class="ds-user">
+    <div class="ds-avatar">{{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}</div>
+    <div style="flex:1;min-width:0">
+      <div class="ds-uname">{{ request.user.get_full_name|default:request.user.username }}</div>
+      <div class="ds-uemail">{{ request.user.email }}</div>
+    </div>
+    <a class="ds-logout" href="{% url 'logout' %}" title="Log out">⎋</a>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     DESKTOP MAIN
+══════════════════════════════════════════ -->
+<div class="desktop-main">
+
+<!-- ══════════════════════════════════════════
+     MOBILE TOPNAV (hidden on desktop)
+══════════════════════════════════════════ -->
+<div class="topnav">
+  <a class="tn-back" href="{% url 'app-shell' %}">← App</a>
+  <div class="tn-title">Wallet</div>
+  <div class="tn-right">
+    <span style="width:6px;height:6px;border-radius:50%;background:var(--up);animation:pulse 1.5s infinite;display:inline-block"></span>
+    <span class="tn-secure">SECURE</span>
+  </div>
+</div>
+
+<!-- Desktop topbar -->
+<div class="desktop-topbar">
+  <div class="dt-title">Wallet &amp; Funds</div>
+  <div class="dt-right">
+    <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted)">
+      Balance: <strong style="color:var(--txt)" id="desktopBalDisp">${{ usd_balance|floatformat:2 }}</strong>
+    </div>
+    <div class="dt-secure"><span></span>SECURE</div>
+  </div>
+</div>
+
+<div class="wallet-shell">
+
+  <!-- HERO -->
+  <div class="wallet-hero">
+    <div style="position:relative;z-index:1">
+      <div class="wh-lbl">Total Wallet Balance</div>
+      <div class="wh-val" id="heroBalVal">${{ usd_balance|floatformat:2 }}</div>
+      <div class="wh-sub">Available · Staked: ${{ staked_usd }}</div>
+    </div>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div class="wallet-quick" style="background:linear-gradient(180deg,rgba(13,26,18,.9) 0%,var(--bg2) 60%)">
+    <div class="wq-btn" onclick="switchTab('deposit')"><div class="wq-icon" style="color:#4ade80">↓</div><div class="wq-label">Deposit</div></div>
+    <div class="wq-btn" onclick="switchTab('withdraw')"><div class="wq-icon" style="color:#f87171">↑</div><div class="wq-label">Withdraw</div></div>
+    <a href="{% url 'app-shell' %}" style="text-decoration:none"><div class="wq-btn"><div class="wq-icon" style="color:#f0c040">⚡</div><div class="wq-label">Trade</div></div></a>
+    <a href="{% url 'portfolio-dashboard' %}" style="text-decoration:none"><div class="wq-btn"><div class="wq-icon" style="color:#a78bfa">◎</div><div class="wq-label">Portfolio</div></div></a>
+  </div>
+
+  <!-- TABS -->
+  <div class="wallet-tabs" style="margin-bottom:0">
+    <div class="wtab active" id="wtab-deposit"  onclick="switchTab('deposit')">Deposit</div>
+    <div class="wtab"        id="wtab-withdraw" onclick="switchTab('withdraw')">Withdraw</div>
+    <div class="wtab"        id="wtab-history"  onclick="switchTab('history')">History</div>
+  </div>
+
+  <!-- ═══ DEPOSIT PANEL ═══ -->
+  <div class="wpanel active" id="wpanel-deposit">
+
+    <!-- MOBILE: stacked layout -->
+    <div class="mobile-only">
+      <p style="font-size:12px;color:var(--txt2);margin-bottom:14px;line-height:1.65">Select a network and send to your unique deposit address.</p>
+      <div style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.8px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Select Network</div>
+      <div class="net-selector" id="netSelectorMobile">
+        {% for addr in addresses %}
+        <button class="net-btn {% if forloop.first %}active{% endif %}"
+                onclick="selectNetwork(this,'{{ addr.network }}','{{ addr.asset.symbol }}','{{ addr.get_network_display }}','{{ addr.address }}')"
+                data-network="{{ addr.network }}" data-sym="{{ addr.asset.symbol }}"
+                data-name="{{ addr.get_network_display }}" data-addr="{{ addr.address }}"
+                data-color="{{ addr.asset.color_hex }}">
+          <div class="net-icon" style="background:{{ addr.asset.color_hex }}22;color:{{ addr.asset.color_hex }}">{{ addr.asset.icon_emoji|default:addr.asset.symbol|slice:":1" }}</div>
+          {{ addr.asset.symbol }}
+        </button>
+        {% empty %}
+        <p style="font-size:13px;color:var(--muted)">No wallet addresses configured.</p>
+        {% endfor %}
+      </div>
+      <div class="qr-section">
+        <div class="qr-net-badge" id="qrNetBadgeMobile">{% if addresses %}{{ addresses.0.asset.symbol }} · {{ addresses.0.get_network_display }}{% endif %}</div>
+        <div class="qr-box"><canvas id="qrCanvasMobile" width="156" height="156"></canvas><div class="qr-corners"><div class="qr-corner tl"></div><div class="qr-corner tr"></div><div class="qr-corner bl"></div><div class="qr-corner br"></div></div></div>
+        <div style="font-size:12px;color:var(--muted)">Scan to send or copy address below</div>
+        <div class="qr-addr-wrap"><div class="qr-addr" id="qrAddressMobile">{% if addresses %}{{ addresses.0.address }}{% endif %}</div><button class="copy-btn" onclick="copyAddr('Mobile')">Copy</button></div>
+      </div>
+      <div class="deposit-notice"><b>⚠ Only send the correct asset on this network.</b> Wrong network = permanent loss. Min. $10.</div>
+      <div class="sim-box">
+        <div class="sim-box-title">🧪 Simulate a Deposit</div>
+        <div class="sim-box-sub">Enter an amount to instantly credit your wallet.</div>
+        <div class="sim-input-wrap"><input class="sim-input" type="number" id="simAmtMobile" placeholder="Enter amount…" oninput="updateDepPreview('Mobile')"/><span class="sim-input-tag">USD</span></div>
+        <div class="preset-amts"><button class="pa" onclick="setSimAmt(100,'Mobile')">$100</button><button class="pa" onclick="setSimAmt(500,'Mobile')">$500</button><button class="pa" onclick="setSimAmt(1000,'Mobile')">$1,000</button><button class="pa" onclick="setSimAmt(5000,'Mobile')">$5,000</button></div>
+        <div class="dep-preview" id="depPreviewMobile"><div class="dp-row"><span class="dp-k">Amount</span><span class="dp-v" id="dpAmtMobile">$0.00</span></div><div class="dp-row"><span class="dp-k">Network</span><span class="dp-v" id="dpNetMobile">—</span></div><div class="dp-row"><span class="dp-k">New Balance</span><span class="dp-v" style="color:var(--up)" id="dpBalMobile">$0.00</span></div></div>
+        <button class="btn-confirm-dep" id="depSubmitBtnMobile" onclick="submitDeposit('Mobile')">Confirm Deposit →</button>
+      </div>
+    </div>
+
+    <!-- DESKTOP: 3-column grid -->
+    <div class="desktop-only desktop-deposit-grid">
+
+      <!-- Col 1: network list -->
+      <div class="ddg-networks">
+        <div style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Select Network</div>
+        <div class="net-selector" id="netSelectorDesktop">
+          {% for addr in addresses %}
+          <button class="net-btn {% if forloop.first %}active{% endif %}"
+                  onclick="selectNetwork(this,'{{ addr.network }}','{{ addr.asset.symbol }}','{{ addr.get_network_display }}','{{ addr.address }}')"
+                  data-network="{{ addr.network }}" data-sym="{{ addr.asset.symbol }}"
+                  data-name="{{ addr.get_network_display }}" data-addr="{{ addr.address }}"
+                  data-color="{{ addr.asset.color_hex }}">
+            <div class="net-icon" style="background:{{ addr.asset.color_hex }}22;color:{{ addr.asset.color_hex }}">{{ addr.asset.icon_emoji|default:addr.asset.symbol|slice:":1" }}</div>
+            <div>
+              <div>{{ addr.asset.symbol }}</div>
+              <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);margin-top:1px">{{ addr.get_network_display }}</div>
+            </div>
+          </button>
+          {% empty %}
+          <p style="font-size:13px;color:var(--muted)">No addresses yet.</p>
+          {% endfor %}
+        </div>
+
+        <div style="margin-top:20px">
+          <div style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">How it works</div>
+          <div class="how-step"><div class="how-num">1</div><div class="how-content"><h4>Pick your network</h4><p>Each network has a unique address. Always double-check before sending.</p></div></div>
+          <div class="how-step"><div class="how-num">2</div><div class="how-content"><h4>Copy or scan the QR</h4><p>Use any external wallet to send. Your address is permanent.</p></div></div>
+          <div class="how-step"><div class="how-num">3</div><div class="how-content"><h4>Balance updates</h4><p>After 1–3 network confirmations your balance is credited automatically.</p></div></div>
+        </div>
+      </div>
+
+      <!-- Col 2: QR code -->
+      <div class="ddg-qr">
+        <div class="qr-net-badge" id="qrNetBadgeDesktop">{% if addresses %}{{ addresses.0.asset.symbol }} · {{ addresses.0.get_network_display }}{% endif %}</div>
+        <div class="qr-section">
+          <div class="qr-box" style="width:220px;height:220px;margin-bottom:20px">
+            <canvas id="qrCanvasDesktop" width="220" height="220"></canvas>
+            <div class="qr-corners"><div class="qr-corner tl"></div><div class="qr-corner tr"></div><div class="qr-corner bl"></div><div class="qr-corner br"></div></div>
+          </div>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Scan to send or copy address below</p>
+          <div class="qr-addr-wrap"><div class="qr-addr" id="qrAddressDesktop">{% if addresses %}{{ addresses.0.address }}{% endif %}</div><button class="copy-btn" onclick="copyAddr('Desktop')">Copy</button></div>
+        </div>
+        <div class="deposit-notice" style="margin-top:16px;max-width:420px;text-align:left"><b>⚠ Only send the correct asset on this network.</b> Sending a different asset or wrong network will result in permanent, unrecoverable loss.</div>
+      </div>
+
+      <!-- Col 3: simulate deposit -->
+      <div class="ddg-sim">
+        <div style="font-size:14px;font-weight:700;margin-bottom:4px">Simulate Deposit</div>
+        <div style="font-size:12px;color:var(--txt2);margin-bottom:18px;line-height:1.6">Credit your wallet instantly to test the platform.</div>
+
+        <div class="stat-card">
+          <div class="stat-card-lbl">Current Balance</div>
+          <div class="stat-card-val" id="simBalCard">${{ usd_balance|floatformat:2 }}</div>
+          <div class="stat-card-sub">USD fiat wallet</div>
+        </div>
+
+        <div class="sim-box" style="background:var(--upbg);border-color:rgba(22,163,74,.2);border-radius:var(--r2);padding:18px;margin-bottom:0">
+          <div class="sim-box-title" style="margin-bottom:12px">🧪 Test Deposit</div>
+          <div class="sim-input-wrap"><input class="sim-input" type="number" id="simAmtDesktop" placeholder="Enter amount…" oninput="updateDepPreview('Desktop')"/><span class="sim-input-tag">USD</span></div>
+          <div class="preset-amts"><button class="pa" onclick="setSimAmt(100,'Desktop')">$100</button><button class="pa" onclick="setSimAmt(500,'Desktop')">$500</button><button class="pa" onclick="setSimAmt(1000,'Desktop')">$1,000</button><button class="pa" onclick="setSimAmt(5000,'Desktop')">$5,000</button><button class="pa" onclick="setSimAmt(10000,'Desktop')">$10K</button></div>
+          <div class="dep-preview" id="depPreviewDesktop" style="display:none"><div class="dp-row"><span class="dp-k">Amount</span><span class="dp-v" id="dpAmtDesktop">$0.00</span></div><div class="dp-row"><span class="dp-k">Network</span><span class="dp-v" id="dpNetDesktop">—</span></div><div class="dp-row"><span class="dp-k">New Balance</span><span class="dp-v" style="color:var(--up)" id="dpBalDesktop">$0.00</span></div></div>
+          <button class="btn-confirm-dep" id="depSubmitBtnDesktop" onclick="submitDeposit('Desktop')">Confirm Deposit →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ WITHDRAW PANEL ═══ -->
+  <div class="wpanel" id="wpanel-withdraw">
+    <div class="mobile-only" style="padding:0">
+      <!-- mobile withdraw form (unchanged) -->
+      <div style="padding:16px">
+        <p style="font-size:12px;color:var(--txt2);margin-bottom:16px;line-height:1.65">Withdraw funds to any external wallet.</p>
+        <div class="wf-group"><label class="wf-label">Network</label><select class="wf-input" id="wdNetworkMobile" onchange="updateWdSummary('Mobile')" style="appearance:none;cursor:pointer">{% for addr in addresses %}<option value="{{ addr.network }}">{{ addr.asset.symbol }} — {{ addr.get_network_display }}</option>{% empty %}<option value="BTC">Bitcoin (BTC)</option>{% endfor %}<option value="USDT">USDT (TRC-20)</option></select></div>
+        <div class="wf-group"><label class="wf-label">Destination Address</label><input class="wf-input" type="text" id="wdAddressMobile" placeholder="Paste wallet address…" oninput="updateWdSummary('Mobile')"/></div>
+        <div class="wf-group"><label class="wf-label">Amount (USD)</label><div style="position:relative"><input class="wf-input" type="number" id="wdAmtMobile" placeholder="0.00" style="padding-right:60px" oninput="updateWdSummary('Mobile')"/><span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;font-family:'DM Mono',monospace;color:var(--muted)">USD</span></div></div>
+        <div class="bal-note"><span>Available Balance</span><b id="wdBalNoteMobile">${{ usd_balance|floatformat:2 }}</b></div>
+        <div class="quick-amts"><button class="qa" onclick="setWdAmt(100,'Mobile')">$100</button><button class="qa" onclick="setWdAmt(500,'Mobile')">$500</button><button class="qa" onclick="setWdAmt(1000,'Mobile')">$1,000</button><button class="qa" onclick="setWdAmt(-1,'Mobile')">Max</button></div>
+        <div class="wd-summary" id="wdSummaryMobile"><div class="ws-row"><span class="ws-k">Amount</span><span class="ws-v" id="wsAmtMobile">$0.00</span></div><div class="ws-row"><span class="ws-k">Network Fee (Sim)</span><span class="ws-v" id="wsFeeMobile">$0.00</span></div><div class="ws-row"><span class="ws-k">You Receive</span><span class="ws-v" id="wsReceiveMobile" style="color:var(--up)">$0.00</span></div><div class="ws-row"><span class="ws-k">New Balance</span><span class="ws-v" id="wsNewBalMobile">$0.00</span></div></div>
+        <div class="wd-warning"><b>⚠ Simulation mode:</b> No real funds move.</div>
+        <button class="btn-wd" id="wdSubmitBtnMobile" onclick="submitWithdraw('Mobile')">Withdraw Funds →</button>
+      </div>
+    </div>
+
+    <div class="desktop-only desktop-wd-grid">
+      <div class="dwg-form">
+        <div style="font-size:18px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px">Withdraw Funds</div>
+        <div style="font-size:13px;color:var(--txt2);margin-bottom:24px;line-height:1.65">Withdraw to any external wallet or bank account.</div>
+        <div class="wf-group"><label class="wf-label">Network</label><select class="wf-input" id="wdNetworkDesktop" onchange="updateWdSummary('Desktop')" style="appearance:none;cursor:pointer">{% for addr in addresses %}<option value="{{ addr.network }}">{{ addr.asset.symbol }} — {{ addr.get_network_display }}</option>{% empty %}<option value="BTC">Bitcoin (BTC)</option>{% endfor %}<option value="USDT">USDT (TRC-20)</option></select></div>
+        <div class="wf-group"><label class="wf-label">Destination Address</label><input class="wf-input" type="text" id="wdAddressDesktop" placeholder="Paste wallet address…" oninput="updateWdSummary('Desktop')"/></div>
+        <div class="wf-group"><label class="wf-label">Amount (USD)</label><div style="position:relative"><input class="wf-input" type="number" id="wdAmtDesktop" placeholder="0.00" style="padding-right:60px" oninput="updateWdSummary('Desktop')"/><span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;font-family:'DM Mono',monospace;color:var(--muted)">USD</span></div></div>
+        <div class="bal-note"><span>Available Balance</span><b id="wdBalNoteDesktop">${{ usd_balance|floatformat:2 }}</b></div>
+        <div class="quick-amts"><button class="qa" onclick="setWdAmt(100,'Desktop')">$100</button><button class="qa" onclick="setWdAmt(500,'Desktop')">$500</button><button class="qa" onclick="setWdAmt(1000,'Desktop')">$1,000</button><button class="qa" onclick="setWdAmt(5000,'Desktop')">$5,000</button><button class="qa" onclick="setWdAmt(-1,'Desktop')">Max</button></div>
+        <div class="wd-summary" id="wdSummaryDesktop"><div class="ws-row"><span class="ws-k">Amount</span><span class="ws-v" id="wsAmtDesktop">$0.00</span></div><div class="ws-row"><span class="ws-k">Network Fee (Sim)</span><span class="ws-v" id="wsFeeDesktop">$0.00</span></div><div class="ws-row"><span class="ws-k">You Receive</span><span class="ws-v" id="wsReceiveDesktop" style="color:var(--up)">$0.00</span></div><div class="ws-row"><span class="ws-k">New Balance</span><span class="ws-v" id="wsNewBalDesktop">$0.00</span></div></div>
+        <div class="wd-warning"><b>⚠ Simulation mode:</b> Deducts from virtual balance only. No real funds move.</div>
+        <button class="btn-wd" id="wdSubmitBtnDesktop" onclick="submitWithdraw('Desktop')">Withdraw Funds →</button>
+      </div>
+      <div class="dwg-info">
+        <div class="stat-card"><div class="stat-card-lbl">Available</div><div class="stat-card-val" id="wdStatBal">${{ usd_balance|floatformat:2 }}</div><div class="stat-card-sub">USD wallet balance</div></div>
+        <div class="stat-card"><div class="stat-card-lbl">Staked</div><div class="stat-card-val">${{ staked_usd }}</div><div class="stat-card-sub">Locked in staking positions</div></div>
+        <div style="margin-top:20px">
+          <div style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Processing times</div>
+          <div style="font-size:12px;color:var(--txt2);line-height:2">
+            <div>Bitcoin (BTC) — ~30–60 min</div>
+            <div>Ethereum (ETH) — ~5–15 min</div>
+            <div>Solana (SOL) — ~1–2 min</div>
+            <div>BNB Chain — ~3–5 min</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ HISTORY PANEL ═══ -->
+  <div class="wpanel" id="wpanel-history">
+    <div class="mobile-only">
+      <div id="walletHistListMobile"><div style="padding:40px;text-align:center;color:var(--muted);font-size:13px;font-family:'DM Mono',monospace">Loading history…</div></div>
+    </div>
+    <div class="desktop-only desktop-hist-grid">
+      <div class="dhg-list" id="walletHistListDesktop"><div style="padding:40px;text-align:center;color:var(--muted);font-size:13px;font-family:'DM Mono',monospace">Loading history…</div></div>
+      <div class="dhg-summary">
+        <div class="stat-card"><div class="stat-card-lbl">Balance</div><div class="stat-card-val" id="histStatBal">${{ usd_balance|floatformat:2 }}</div><div class="stat-card-sub">USD wallet</div></div>
+        <div style="margin-top:20px">
+          <div style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">About this ledger</div>
+          <div style="font-size:12px;color:var(--txt2);line-height:1.7">Every deposit, withdrawal, trade, and staking reward is recorded here as an immutable balance adjustment. You can see the exact reason your balance changed at any point.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wallet-shell -->
+</div><!-- /desktop-main -->
+
+<!-- Utility classes injected by JS for show/hide -->
+<style>
+  .mobile-only{display:block}
+  .desktop-only{display:none}
+  @media(min-width:901px){
+    .mobile-only{display:none!important}
+    .desktop-only{display:block!important}
+    .desktop-deposit-grid.desktop-only{display:grid!important}
+    .desktop-wd-grid.desktop-only{display:grid!important}
+    .desktop-hist-grid.desktop-only{display:grid!important}
+  }
+</style>
+
+<script>
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let currentBalance = parseFloat("{{ usd_balance }}") || 0;
+let currentNetwork = {
+  sym:  '{% if addresses %}{{ addresses.0.asset.symbol }}{% else %}BTC{% endif %}',
+  name: '{% if addresses %}{{ addresses.0.get_network_display }}{% else %}Bitcoin Network{% endif %}',
+  addr: '{% if addresses %}{{ addresses.0.address }}{% else %}bc1qexample{% endif %}',
+};
+const NET_FEES = {BTC:2.5, ETH:1.8, SOL:0.5, BNB:0.8, USDT:1.0};
+const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
+const isDesktop = () => window.innerWidth > 900;
+
+function fmtP(n){if(n>=1000)return'$'+n.toLocaleString(undefined,{maximumFractionDigits:0});return'$'+n.toFixed(2)}
+
+/* ══════════════════════════════════════
+   TABS
+══════════════════════════════════════ */
+function switchTab(tab){
+  ['deposit','withdraw','history'].forEach(t=>{
+    document.getElementById('wtab-'+t).classList.toggle('active',t===tab);
+    document.getElementById('wpanel-'+t).classList.toggle('active',t===tab);
+  });
+  if(tab==='history') loadHistory();
+}
+
+/* ══════════════════════════════════════
+   NETWORK SELECTION  (drives both mobile + desktop QR)
+══════════════════════════════════════ */
+function selectNetwork(btn, network, sym, name, addr){
+  // Update all selector buttons across both mobile and desktop
+  document.querySelectorAll('.net-btn').forEach(b=>b.classList.remove('active'));
+  // Activate matching buttons in both selectors
+  document.querySelectorAll(`.net-btn[data-network="${network}"]`).forEach(b=>b.classList.add('active'));
+
+  currentNetwork = {sym, name, addr};
+
+  // Update QR + address for whichever variant is visible
+  ['Mobile','Desktop'].forEach(v=>{
+    const addrEl = document.getElementById('qrAddress'+v);
+    const badgeEl = document.getElementById('qrNetBadge'+v);
+    if(addrEl) addrEl.textContent = addr;
+    if(badgeEl) badgeEl.textContent = sym+' · '+name;
+    generateQR('qrCanvas'+v, addr);
+  });
+
+  updateDepPreview('Mobile');
+  updateDepPreview('Desktop');
+}
+
+/* ══════════════════════════════════════
+   QR CODE
+══════════════════════════════════════ */
+function generateQR(canvasId, addr){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const S = canvas.width, cells = 29, cs = Math.floor(S/cells), off = (S - cs*cells)/2;
+  ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,S,S);
+  const pat = buildPattern(addr, cells);
+  ctx.fillStyle='#1a1814';
+  for(let r=0;r<cells;r++) for(let c=0;c<cells;c++){
+    if(pat[r][c]) ctx.fillRect(off+c*cs, off+r*cs, cs-0.5, cs-0.5);
+  }
+  drawFinder(ctx, off, off, cs);
+  drawFinder(ctx, off+(cells-7)*cs, off, cs);
+  drawFinder(ctx, off, off+(cells-7)*cs, cs);
+  const cx=S/2, cy=S/2, r=Math.round(S*0.11);
+  ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(cx,cy,r+2,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#f0c040'; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#09090f'; ctx.font=`bold ${r}px Syne,sans-serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('₿',cx,cy+1);
+}
+function drawFinder(ctx,x,y,cs){
+  ctx.fillStyle='#1a1814'; ctx.fillRect(x,y,cs*7,cs*7);
+  ctx.fillStyle='#fff'; ctx.fillRect(x+cs,y+cs,cs*5,cs*5);
+  ctx.fillStyle='#1a1814'; ctx.fillRect(x+cs*2,y+cs*2,cs*3,cs*3);
+}
+function buildPattern(addr, cells){
+  const pat=Array.from({length:cells},()=>Array(cells).fill(false));
+  for(let r=0;r<cells;r++) for(let c=0;c<cells;c++){
+    if(r<8&&c<8||r<8&&c>=cells-8||r>=cells-8&&c<8){pat[r][c]=false;continue}
+    const ci=(r*cells+c)%addr.length;
+    pat[r][c]=(addr.charCodeAt(ci)+r*3+c*7)%3===0;
+  }
+  return pat;
+}
+
+/* ══════════════════════════════════════
+   COPY ADDRESS
+══════════════════════════════════════ */
+function copyAddr(variant){
+  const addr = document.getElementById('qrAddress'+(variant||'Mobile'))?.textContent || currentNetwork.addr;
+  navigator.clipboard?.writeText(addr).catch(()=>{});
+  showToast('Address copied ✓','success');
+}
+
+/* ══════════════════════════════════════
+   DEPOSIT
+══════════════════════════════════════ */
+function setSimAmt(v, variant){
+  const inp = document.getElementById('simAmt'+(variant||'Mobile'));
+  if(inp){ inp.value=v; updateDepPreview(variant); }
+}
+function updateDepPreview(variant){
+  const v = variant||'Mobile';
+  const amt = parseFloat(document.getElementById('simAmt'+v)?.value)||0;
+  const prev = document.getElementById('depPreview'+v);
+  if(!prev) return;
+  if(amt<=0){prev.style.display='none';return}
+  prev.style.display='block';
+  const dpAmt=document.getElementById('dpAmt'+v);const dpNet=document.getElementById('dpNet'+v);const dpBal=document.getElementById('dpBal'+v);
+  if(dpAmt)dpAmt.textContent=fmtP(amt);
+  if(dpNet)dpNet.textContent=currentNetwork.name;
+  if(dpBal)dpBal.textContent=fmtP(currentBalance+amt);
+}
+
+async function submitDeposit(variant){
+  const v = variant||'Mobile';
+  const amt = parseFloat(document.getElementById('simAmt'+v)?.value)||0;
+  if(amt<10){showToast('Minimum deposit is $10','error');return}
+  const btn = document.getElementById('depSubmitBtn'+v);
+  if(btn){btn.disabled=true;btn.textContent='Processing…';}
+  try{
+    const r=await fetch("{% url 'api-wallet-deposit' %}",{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body:JSON.stringify({amount:amt,network:currentNetwork.sym})
+    });
+    const d=await r.json();
+    if(d.status==='success'||d.new_balance){
+      currentBalance = parseFloat(d.new_balance)||currentBalance+amt;
+      updateAllBalanceDisplays();
+      const inp=document.getElementById('simAmt'+v);if(inp)inp.value='';
+      const prev=document.getElementById('depPreview'+v);if(prev)prev.style.display='none';
+      showToast(`Deposited ${fmtP(amt)} via ${currentNetwork.sym} ✓`,'success');
+      setTimeout(()=>switchTab('history'),800);
+    } else {showToast(d.error||'Deposit failed','error')}
+  }catch(e){showToast('Network error','error')}
+  finally{if(btn){btn.disabled=false;btn.textContent='Confirm Deposit →';}}
+}
+
+/* ══════════════════════════════════════
+   WITHDRAW
+══════════════════════════════════════ */
+function setWdAmt(v, variant){
+  const vr=variant||'Mobile';
+  const inp=document.getElementById('wdAmt'+vr);
+  if(inp){inp.value=v===-1?Math.floor(currentBalance):v;updateWdSummary(vr);}
+}
+function updateWdSummary(variant){
+  const v=variant||'Mobile';
+  const amt=parseFloat(document.getElementById('wdAmt'+v)?.value)||0;
+  const net=document.getElementById('wdNetwork'+v)?.value||'BTC';
+  const sum=document.getElementById('wdSummary'+v);
+  if(!sum)return;
+  if(amt<=0){sum.style.display='none';return}
+  sum.style.display='block';
+  const fee=NET_FEES[net]||1;
+  const wsAmt=document.getElementById('wsAmt'+v);const wsFee=document.getElementById('wsFee'+v);const wsRec=document.getElementById('wsReceive'+v);const wsNB=document.getElementById('wsNewBal'+v);
+  if(wsAmt)wsAmt.textContent=fmtP(amt);
+  if(wsFee)wsFee.textContent=fmtP(fee);
+  if(wsRec)wsRec.textContent=fmtP(Math.max(0,amt-fee));
+  if(wsNB)wsNB.textContent=fmtP(Math.max(0,currentBalance-amt));
+}
+
+async function submitWithdraw(variant){
+  const v=variant||'Mobile';
+  const amt=parseFloat(document.getElementById('wdAmt'+v)?.value)||0;
+  const net=document.getElementById('wdNetwork'+v)?.value||'BTC';
+  const addr=document.getElementById('wdAddress'+v)?.value.trim();
+  if(amt<10){showToast('Minimum withdrawal is $10','error');return}
+  if(!addr){showToast('Enter a destination address','error');return}
+  if(amt>currentBalance){showToast('Insufficient balance','error');return}
+  const btn=document.getElementById('wdSubmitBtn'+v);
+  if(btn){btn.disabled=true;btn.textContent='Processing…';}
+  try{
+    const r=await fetch("{% url 'api-wallet-withdraw' %}",{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body:JSON.stringify({amount:amt,network:net,address:addr})
+    });
+    const d=await r.json();
+    if(d.status==='success'||d.new_balance){
+      currentBalance=parseFloat(d.new_balance)||Math.max(0,currentBalance-amt);
+      updateAllBalanceDisplays();
+      const aInp=document.getElementById('wdAmt'+v);if(aInp)aInp.value='';
+      const addrInp=document.getElementById('wdAddress'+v);if(addrInp)addrInp.value='';
+      const sum=document.getElementById('wdSummary'+v);if(sum)sum.style.display='none';
+      showToast(`Withdrawal of ${fmtP(amt)} submitted ✓`,'success');
+      setTimeout(()=>switchTab('history'),800);
+    } else {showToast(d.error||'Withdrawal failed','error')}
+  }catch(e){showToast('Network error','error')}
+  finally{if(btn){btn.disabled=false;btn.textContent='Withdraw Funds →';}}
+}
+
+/* ══════════════════════════════════════
+   UPDATE ALL BALANCE DISPLAYS
+══════════════════════════════════════ */
+function updateAllBalanceDisplays(){
+  const f=fmtP(currentBalance);
+  // hero
+  const hv=document.getElementById('heroBalVal');if(hv)hv.textContent=f;
+  // desktop topbar
+  const db=document.getElementById('desktopBalDisp');if(db)db.textContent=f;
+  // sim card
+  const sc=document.getElementById('simBalCard');if(sc)sc.textContent=f;
+  // withdraw bal notes
+  ['Mobile','Desktop'].forEach(v=>{
+    const bn=document.getElementById('wdBalNote'+v);if(bn)bn.textContent=f;
+  });
+  // hist stat
+  const hs=document.getElementById('histStatBal');if(hs)hs.textContent=f;
+  // wd stat
+  const ws=document.getElementById('wdStatBal');if(ws)ws.textContent=f;
+}
+
+/* ══════════════════════════════════════
+   HISTORY
+══════════════════════════════════════ */
+async function loadHistory(){
+  const listIds = isDesktop() ? ['walletHistListDesktop'] : ['walletHistListMobile'];
+  // Always update both so switching breakpoints stays consistent
+  const allListIds = ['walletHistListMobile','walletHistListDesktop'];
+  allListIds.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted);font-size:13px;font-family:\'DM Mono\',monospace">Loading…</div>';
+  });
+  try{
+    const r=await fetch("{% url 'api-wallet-balance' %}");
+    const d=await r.json();
+    currentBalance=parseFloat(d.usd_balance)||currentBalance;
+    updateAllBalanceDisplays();
+    const html = !d.history?.length
+      ? '<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px;font-family:\'DM Mono\',monospace">No wallet transactions yet.</div>'
+      : '<div class="wh-group-lbl">Wallet Activity</div>' + d.history.map(tx=>{
+          const isCredit=tx.direction==='credit';
+          const statusCls=tx.created_at_human==='just now'?'s-processing':'s-completed';
+          return`<div class="wh-row ${isCredit?'whr-dep':'whr-wd'}">
+            <div class="whr-icon">${isCredit?'↓':'↑'}</div>
+            <div class="whr-info">
+              <div class="whr-type">${tx.type_label}</div>
+              <div class="whr-net">${tx.asset} · ${tx.description||''}</div>
+              <span class="whr-status ${statusCls}">${tx.created_at_human==='just now'?'processing':'completed'}</span>
+            </div>
+            <div class="whr-right">
+              <div class="whr-amt ${isCredit?'':'ti-d'}">${isCredit?'+':'-'}${tx.usd_value?fmtP(parseFloat(tx.usd_value)):fmtP(Math.abs(parseFloat(tx.delta)))}</div>
+              <div class="whr-date">${tx.created_at_human}</div>
+            </div>
+          </div>`;
+        }).join('');
+    allListIds.forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=html;});
+  }catch(e){
+    allListIds.forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<div style="padding:32px;text-align:center;color:var(--dn);font-size:13px">Failed to load history.</div>';});
+  }
+}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+function showToast(msg,type='info'){
+  const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.animation='toastOut .3s ease forwards';setTimeout(()=>t.remove(),300)},2500);
+}
+
+/* ══════════════════════════════════════
+   BOOT
+══════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded',()=>{
+  const initAddr = currentNetwork.addr;
+  generateQR('qrCanvasMobile',  initAddr);
+  generateQR('qrCanvasDesktop', initAddr);
+  loadHistory();
+});
+</script>
+</body>
+</html>
