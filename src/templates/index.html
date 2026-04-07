@@ -6,6 +6,7 @@
 <meta name="csrf-token" content="{{ csrf_token }}"/>
 <title>NexusX — Trade the Future</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -19,6 +20,7 @@
 html,body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
 button,input,select,textarea{font-family:'Syne',sans-serif;cursor:pointer}
 a{text-decoration:none}
+.material-symbols-outlined{font-family:'Material Symbols Outlined' !important;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;line-height:1;display:inline-flex;align-items:center;justify-content:center;}
 
 /* ── PAGE SWITCHER ── */
 .page{display:none;min-height:100vh}
@@ -231,7 +233,7 @@ footer{background:var(--bg3);border-top:1px solid var(--border);padding:32px 48p
 <div id="page-landing" class="page active">
   <nav class="lp-nav">
     <div class="lp-logo" onclick="showLanding()">
-      <div class="lm">₿</div>
+      <div class="lm"><span class="material-symbols-outlined">currency_bitcoin</span></div>
       <div class="lt">NEXUS<span>X</span></div>
     </div>
     <div class="nav-links">
@@ -267,7 +269,7 @@ footer{background:var(--bg3);border-top:1px solid var(--border);padding:32px 48p
     <div class="lp-mockup">
       <div style="position:relative;display:inline-block">
         <div class="mock-floater mf-a"><span style="width:8px;height:8px;border-radius:50%;background:var(--up)"></span><span style="font-size:11px;font-family:'DM Mono',monospace"><b style="color:var(--up)">+8.4%</b> ETH today</span></div>
-        <div class="mock-floater mf-b"><span style="font-size:17px">🔒</span><div><div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted)">APY</div><div style="font-size:13px;font-weight:800;color:var(--up)">18.5% SOL</div></div></div>
+        <div class="mock-floater mf-b"><span class="material-symbols-outlined" style="font-size:17px">lock</span><div><div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted)">APY</div><div style="font-size:13px;font-weight:800;color:var(--up)">18.5% SOL</div></div></div>
         <div class="mock-phone" style="transform:rotate(-2deg)">
           <div class="mp-notch"><div class="mp-notch-bar"></div></div>
           <div class="mp-body">
@@ -281,15 +283,15 @@ footer{background:var(--bg3);border-top:1px solid var(--border);padding:32px 48p
               <div class="mp-pill">+2.34% today</div>
             </div>
             <div class="mp-quick">
-              <div class="mp-qitem"><div class="mp-qi-icon">↑</div><div class="mp-qi-lbl">Buy</div></div>
-              <div class="mp-qitem"><div class="mp-qi-icon">↓</div><div class="mp-qi-lbl">Sell</div></div>
-              <div class="mp-qitem" style="background:var(--gold-bg);border-color:var(--gold-br)"><div class="mp-qi-icon">⬡</div><div class="mp-qi-lbl" style="color:var(--gold)">Stake</div></div>
-              <div class="mp-qitem"><div class="mp-qi-icon">⇄</div><div class="mp-qi-lbl">Swap</div></div>
+              <div class="mp-qitem"><div class="mp-qi-icon"><span class="material-symbols-outlined">arrow_upward</span></div><div class="mp-qi-lbl">Buy</div></div>
+              <div class="mp-qitem"><div class="mp-qi-icon"><span class="material-symbols-outlined">arrow_downward</span></div><div class="mp-qi-lbl">Sell</div></div>
+              <div class="mp-qitem" style="background:var(--gold-bg);border-color:var(--gold-br)"><div class="mp-qi-icon"><span class="material-symbols-outlined">savings</span></div><div class="mp-qi-lbl" style="color:var(--gold)">Stake</div></div>
+              <div class="mp-qitem"><div class="mp-qi-icon"><span class="material-symbols-outlined">swap_horiz</span></div><div class="mp-qi-lbl">Swap</div></div>
             </div>
             <div class="mp-coins">
-              <div class="mp-coin"><div class="mp-ci" style="background:rgba(247,147,26,.12);color:#f7931a">₿</div><div class="mp-cn">Bitcoin</div><div class="mp-cp" id="lp-btc-p">$83,200</div></div>
-              <div class="mp-coin"><div class="mp-ci" style="background:rgba(98,126,234,.12);color:#627eea">Ξ</div><div class="mp-cn">Ethereum</div><div class="mp-cp" id="lp-eth-p">$3,100</div></div>
-              <div class="mp-coin"><div class="mp-ci" style="background:rgba(153,69,255,.12);color:#9945ff">◎</div><div class="mp-cn">Solana</div><div class="mp-cp" id="lp-sol-p">$145</div></div>
+              <div class="mp-coin"><div class="mp-ci" style="background:rgba(247,147,26,.12);color:#f7931a"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 4h1.5c1.38 0 2.5 1.12 2.5 2.5S15.88 11 14.5 11H13v4h1.5c1.38 0 2.5 1.12 2.5 2.5S15.88 20 14.5 20H13v1h-2v-1H8.5C7.12 20 6 18.88 6 17.5S7.12 15 8.5 15H10V9H8.5C7.12 9 6 7.88 6 6.5S7.12 4 8.5 4H10V3h2v1z"/></svg></div><div class="mp-cn">Bitcoin</div><div class="mp-cp" id="lp-btc-p">$83,200</div></div>
+              <div class="mp-coin"><div class="mp-ci" style="background:rgba(98,126,234,.12);color:#627eea"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12,2 4,12 12,9 20,12"/><polygon points="12,22 4,12 12,15 20,12" opacity="0.85"/></svg></div><div class="mp-cn">Ethereum</div><div class="mp-cp" id="lp-eth-p">$3,100</div></div>
+              <div class="mp-coin"><div class="mp-ci" style="background:rgba(153,69,255,.12);color:#9945ff"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12,2 4,8 12,14 20,8"/><polygon points="12,22 4,16 12,10 20,16" opacity="0.85"/></svg></div><div class="mp-cn">Solana</div><div class="mp-cp" id="lp-sol-p">$145</div></div>
             </div>
           </div>
         </div>
@@ -308,12 +310,12 @@ footer{background:var(--bg3);border-top:1px solid var(--border);padding:32px 48p
       <div style="font-size:clamp(28px,4vw,44px);font-weight:800;letter-spacing:-1.5px;line-height:1.1">Everything to <span style="color:var(--gold)">grow</span> your wealth</div>
     </div>
     <div class="svc-grid">
-      <div class="svc-item"><div class="si-icon">📈</div><div class="si-h">Spot Trading</div><div class="si-p">Buy and sell 400+ cryptocurrencies with real-time charts and instant execution.</div><div class="si-stat">400+ markets</div></div>
-      <div class="svc-item featured" id="staking-anchor"><div class="si-badge">★ POPULAR</div><div class="si-icon">🔒</div><div class="si-h">Crypto Staking</div><div class="si-p">Lock your coins and earn up to 18.5% APY. Flexible and fixed-term pools available.</div><div class="si-stat">Up to 18.5% APY</div></div>
-      <div class="svc-item"><div class="si-icon">💳</div><div class="si-h">Multi-Chain Wallet</div><div class="si-p">Deposit, withdraw, and manage assets across BTC, ETH, SOL and more networks securely.</div><div class="si-stat">8+ networks</div></div>
-      <div class="svc-item"><div class="si-icon">⚡</div><div class="si-h">Instant Swaps</div><div class="si-p">Swap between any tokens in seconds using aggregated best-rate liquidity.</div><div class="si-stat">Best-rate routing</div></div>
-      <div class="svc-item"><div class="si-icon">🤖</div><div class="si-h">AI Portfolio</div><div class="si-p">Let NexusX AI rebalance, DCA, and optimize your portfolio automatically.</div><div class="si-stat">Smart automation</div></div>
-      <div class="svc-item"><div class="si-icon">📊</div><div class="si-h">Derivatives</div><div class="si-p">Trade perpetual futures with up to 10× leverage on BTC, ETH, and top altcoins.</div><div class="si-stat">Up to 10× leverage</div></div>
+      <div class="svc-item"><div class="si-icon"><span class="material-symbols-outlined">show_chart</span></div><div class="si-h">Spot Trading</div><div class="si-p">Buy and sell 400+ cryptocurrencies with real-time charts and instant execution.</div><div class="si-stat">400+ markets</div></div>
+      <div class="svc-item featured" id="staking-anchor"><div class="si-badge">★ POPULAR</div><div class="si-icon"><span class="material-symbols-outlined">lock</span></div><div class="si-h">Crypto Staking</div><div class="si-p">Lock your coins and earn up to 18.5% APY. Flexible and fixed-term pools available.</div><div class="si-stat">Up to 18.5% APY</div></div>
+      <div class="svc-item"><div class="si-icon"><span class="material-symbols-outlined">account_balance_wallet</span></div><div class="si-h">Multi-Chain Wallet</div><div class="si-p">Deposit, withdraw, and manage assets across BTC, ETH, SOL and more networks securely.</div><div class="si-stat">8+ networks</div></div>
+      <div class="svc-item"><div class="si-icon"><span class="material-symbols-outlined">bolt</span></div><div class="si-h">Instant Swaps</div><div class="si-p">Swap between any tokens in seconds using aggregated best-rate liquidity.</div><div class="si-stat">Best-rate routing</div></div>
+      <div class="svc-item"><div class="si-icon"><span class="material-symbols-outlined">smart_toy</span></div><div class="si-h">AI Portfolio</div><div class="si-p">Let NexusX AI rebalance, DCA, and optimize your portfolio automatically.</div><div class="si-stat">Smart automation</div></div>
+      <div class="svc-item"><div class="si-icon"><span class="material-symbols-outlined">insights</span></div><div class="si-h">Derivatives</div><div class="si-p">Trade perpetual futures with up to 10× leverage on BTC, ETH, and top altcoins.</div><div class="si-stat">Up to 10× leverage</div></div>
     </div>
   </div>
 
@@ -334,14 +336,14 @@ footer{background:var(--bg3);border-top:1px solid var(--border);padding:32px 48p
     <p style="font-size:15px;color:var(--txt2);margin-bottom:32px">Join 2.4 million traders. No fees. Setup in 2 minutes.</p>
     <button class="btn-lp" style="font-size:15px;padding:16px 40px" onclick="showAuth('signup')">Create Free Account →</button>
     <div style="display:flex;justify-content:center;gap:24px;margin-top:24px;flex-wrap:wrap">
-      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace"><span style="width:16px;height:16px;border-radius:50%;background:var(--upbg);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--up)">✓</span>Zero trading fees</span>
-      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace"><span style="width:16px;height:16px;border-radius:50%;background:var(--upbg);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--up)">✓</span>Up to 18.5% APY</span>
-      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace"><span style="width:16px;height:16px;border-radius:50%;background:var(--upbg);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--up)">✓</span>Bank-grade security</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace"><span style="width:16px;height:16px;border-radius:50%;background:var(--upbg);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--up)"><span class="material-symbols-outlined" style="font-size:9px">check</span></span>Zero trading fees</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace"><span style="width:16px;height:16px;border-radius:50%;background:var(--upbg);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--up)"><span class="material-symbols-outlined" style="font-size:9px">check</span></span>Up to 18.5% APY</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace"><span style="width:16px;height:16px;border-radius:50%;background:var(--upbg);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--up)"><span class="material-symbols-outlined" style="font-size:9px">check</span></span>Bank-grade security</span>
     </div>
   </div>
 
   <footer>
-    <div class="lp-logo"><div class="lm">₿</div><div class="lt">NEXUS<span>X</span></div></div>
+    <div class="lp-logo"><div class="lm"><span class="material-symbols-outlined">currency_bitcoin</span></div><div class="lt">NEXUS<span>X</span></div></div>
     <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Security</a><a href="#">Docs</a></div>
     <div class="footer-copy">© 2026 NexusX Ltd.</div>
   </footer>
@@ -356,7 +358,7 @@ footer{background:var(--bg3);border-top:1px solid var(--border);padding:32px 48p
   <div class="auth-left">
     <div class="auth-left-glow"></div>
     <div class="lp-logo" onclick="showLanding()" style="position:relative;z-index:1;cursor:pointer">
-      <div class="lm">₿</div><div class="lt" style="color:#f0f0e8">NEXUS<span style="color:#f0c040">X</span></div>
+      <div class="lm"><span class="material-symbols-outlined">currency_bitcoin</span></div><div class="lt" style="color:#f0f0e8">NEXUS<span style="color:#f0c040">X</span></div>
     </div>
     <div class="auth-quote">
       <div class="aq-text">"Don't let your money sit idle. <span>Stake it. Grow it.</span> Let NexusX work for you 24/7."</div>
@@ -415,10 +417,10 @@ footer{background:var(--bg3);border-top:1px solid var(--border);padding:32px 48p
 </div>
         <div class="af-group">
           <label class="af-label">Password</label>
-          <div class="pw-wrap"><input class="af-input" type="password" id="authPw" name="password1" placeholder="Min. 8 characters" oninput="checkStrength(this.value)"/><button class="eye-btn" type="button" onclick="togglePw('authPw',this)">👁</button></div>
+          <div class="pw-wrap"><input class="af-input" type="password" id="authPw" name="password1" placeholder="Min. 8 characters" oninput="checkStrength(this.value)"/><button class="eye-btn" type="button" onclick="togglePw('authPw',this)"><span class="material-symbols-outlined">visibility</span></button></div>
           <div class="str-bar"><div class="sb" id="sb1"></div><div class="sb" id="sb2"></div><div class="sb" id="sb3"></div><div class="sb" id="sb4"></div></div>
         </div>
-        <div class="af-group"><label class="af-label">Confirm Password</label><div class="pw-wrap"><input class="af-input" type="password" id="authPw2" name="password2" placeholder="Re-enter password"/><button class="eye-btn" type="button" onclick="togglePw('authPw2',this)">👁</button></div></div>
+        <div class="af-group"><label class="af-label">Confirm Password</label><div class="pw-wrap"><input class="af-input" type="password" id="authPw2" name="password2" placeholder="Re-enter password"/><button class="eye-btn" type="button" onclick="togglePw('authPw2',this)"><span class="material-symbols-outlined">visibility</span></button></div></div>
         <div class="chk-row"><input type="checkbox" id="authTerms" checked/><label for="authTerms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label></div>
         <button class="btn-auth" id="authSubmitBtn" onclick="submitSignup()">Create Account ✦</button>
         <div class="divider" id="authDivider"><div class="div-line"></div><div class="div-text">or continue with</div><div class="div-line"></div></div>
@@ -456,7 +458,7 @@ footer{background:var(--bg3);border-top:1px solid var(--border);padding:32px 48p
       <!-- ── SUCCESS ── -->
       <div class="auth-step" id="asSuccess">
         <div class="success-wrap">
-          <div class="success-icon">✓</div>
+          <div class="success-icon"><span class="material-symbols-outlined">task_alt</span></div>
           <div style="font-size:24px;font-weight:800;letter-spacing:-1px;margin-bottom:8px">Welcome to NexusX!</div>
           <div style="font-size:14px;color:var(--txt2);line-height:1.7;margin-bottom:28px">Account created. You've been credited <b style="color:var(--gold)">$10,000 virtual USD</b>. Redirecting to your dashboard…</div>
           <div style="width:100%;height:3px;background:var(--bg3);border-radius:3px;overflow:hidden"><div id="redirectBar" style="height:3px;background:linear-gradient(90deg,var(--gold-l),var(--gold));width:0%;transition:width 2s linear;border-radius:3px"></div></div>
@@ -606,7 +608,7 @@ async function submitSignup(){
     btn.disabled = false;
 
     if(d.success){
-      window.location.href = "{% url 'portfolio-dashboard' %}";
+      window.location.href = "{% url 'app-shell' %}";
       return;
     }
 
@@ -695,7 +697,9 @@ function togglePw(id,btn){
   const inp = document.getElementById(id);
   const isText = inp.type === 'text';
   inp.type = isText ? 'password' : 'text';
-  btn.textContent = isText ? '👁' : '🙈';
+  btn.innerHTML = isText
+    ? '<span class="material-symbols-outlined">visibility</span>'
+    : '<span class="material-symbols-outlined">visibility_off</span>';
 }
 
 /* ═══════════════════════════════

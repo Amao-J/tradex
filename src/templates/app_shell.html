@@ -6,7 +6,12 @@
 <meta name="csrf-token" content="{{ csrf_token }}"/>
 <title>NexusX — App</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0" rel="stylesheet"/>
 <style>
+.material-symbols-outlined{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;font-size:inherit;line-height:1;letter-spacing:normal;text-transform:none;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle}
+.material-icon-inline{font-size:18px;vertical-align:middle;margin-right:6px;display:inline-flex;align-items:center;justify-content:center}
+.coin-logo-svg, .tx-icon .material-symbols-outlined{width:100%;height:100%;display:inline-flex;align-items:center;justify-content:center}
+.coin-logo-svg svg{width:100%;height:100%;display:block}
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --gold:#c8860a;--gold-l:#f0c040;--gold-bg:#fdf8ec;--gold-br:#e8c96a;
@@ -226,10 +231,10 @@ input,select,textarea{font-family:'Syne',sans-serif}
 ══════════════════════════════════════════ */
 
 /* ticker */
-.ticker-strip{background:var(--bg3);border-bottom:1px solid var(--border);overflow:hidden;padding:11px 0}
+.ticker-strip{background:var(--bg3);border-bottom:1px solid var(--border);overflow:hidden;padding:14px 0 }
 .ticker-inner{display:flex;animation:tick 28s linear infinite;white-space:nowrap}
 @keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.ti{display:inline-flex;align-items:center;gap:7px;padding:0 22px;border-right:1px solid var(--border);font-family:'DM Mono',monospace;font-size:11px}
+.ti{display:inline-flex;align-items:center;gap:7px;padding:0 22px;border-right:1px solid var(--border);font-family:'DM Mono',monospace;font-size:14px}
 .ti-s{font-weight:500;color:var(--gold)}
 .ti-u{color:var(--up)}.ti-d{color:var(--dn)}
 
@@ -468,29 +473,29 @@ button, .bn, .ds-item, .coin-row, .ts-chip, .btn-prim, input, select {
 
   <nav class="ds-nav">
     <div class="ds-item active" id="dsi-markets" onclick="navTo('markets')">
-      <span class="ds-item-icon">◈</span>Markets
+      <span class="ds-item-icon material-symbols-outlined">insights</span>Markets
     </div>
     <div class="ds-item" id="dsi-trade" onclick="navTo('trade')">
-      <span class="ds-item-icon">⚡</span>Trade
+      <span class="ds-item-icon material-symbols-outlined">bolt</span>Trade
     </div>
     <div class="ds-item" id="dsi-staking" onclick="navTo('staking')">
-      <span class="ds-item-icon">🔒</span>Staking
+      <span class="ds-item-icon material-symbols-outlined">shield</span>Staking
     </div>
     <div class="ds-item" id="dsi-portfolio" onclick="navTo('portfolio')">
-      <span class="ds-item-icon">◎</span>Portfolio
+      <span class="ds-item-icon material-symbols-outlined">stacked_line_chart</span>Portfolio
     </div>
     <div class="ds-item" id="dsi-history" onclick="navTo('history')">
-      <span class="ds-item-icon">◷</span>History
+      <span class="ds-item-icon material-symbols-outlined">history</span>History
     </div>
     <div class="ds-divider"></div>
     <a class="ds-item" href="{% url 'wallet' %}">
-      <span class="ds-item-icon">💳</span>Wallet
+      <span class="ds-item-icon material-symbols-outlined">account_balance_wallet</span>Wallet
     </a>
     <a class="ds-item" href="{% url 'portfolio-dashboard' %}">
-      <span class="ds-item-icon">📊</span>Dashboard
+      <span class="ds-item-icon material-symbols-outlined">dashboard</span>Dashboard
     </a>
     <div class="ds-item" id="dsi-profile" onclick="navTo('profile')">
-      <span class="ds-item-icon">👤</span>Profile
+      <span class="ds-item-icon material-symbols-outlined">person</span>Profile
     </div>
   </nav>
 
@@ -500,7 +505,7 @@ button, .bn, .ds-item, .coin-row, .ts-chip, .btn-prim, input, select {
       <div class="ds-uname">{{ request.user.get_full_name|default:request.user.username }}</div>
       <div class="ds-uemail">{{ request.user.email }}</div>
     </div>
-    <a class="ds-logout" href="{% url 'logout' %}" title="Log out">⎋</a>
+    <a class="ds-logout" href="{% url 'logout' %}" title="Log out"><span class="material-symbols-outlined">logout</span></a>
   </div>
 </div>
 
@@ -520,7 +525,7 @@ button, .bn, .ds-item, .coin-row, .ts-chip, .btn-prim, input, select {
     <div class="topbar">
       <div class="topbar-logo"><div class="lm">₿</div><div class="lt">NEXUS<span>X</span></div></div>
       <div class="topbar-right">
-        <div class="notif-btn">🔔<div class="notif-dot"></div></div>
+        <div class="notif-btn"><span class="material-symbols-outlined">notifications</span><div class="notif-dot"></div></div>
         <div class="avatar-btn" id="topAvatar" onclick="navTo('profile')">{{ request.user.first_name|first|upper }}</div>
       </div>
     </div>
@@ -528,8 +533,8 @@ button, .bn, .ds-item, .coin-row, .ts-chip, .btn-prim, input, select {
     <div class="desktop-topbar">
       <div class="dt-title">Markets</div>
       <div class="dt-right">
-        <div class="dt-balance-chip">💰 Cash: <span id="dtCashDisp">${{ wallet_balance|floatformat:2|default:"0" }}</span></div>
-        <div class="notif-btn">🔔<div class="notif-dot"></div></div>
+        <div class="dt-balance-chip"><span class="material-symbols-outlined material-icon-inline">payments</span>Cash: <span id="dtCashDisp">${{ wallet_balance|floatformat:2|default:"0" }}</span></div>
+        <div class="notif-btn"><span class="material-symbols-outlined">notifications</span><div class="notif-dot"></div></div>
       </div>
     </div>
 
@@ -540,7 +545,7 @@ button, .bn, .ds-item, .coin-row, .ts-chip, .btn-prim, input, select {
       <div class="ds-left">
         <!-- AI Signals -->
         <div style="font-size:12px;font-family:'DM Mono',monospace;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;padding:12px 16px 4px;display:flex;justify-content:space-between;align-items:center">
-          <span>🤖 AI Market Signals</span>
+          <span><span class="material-symbols-outlined material-icon-inline">smart_toy</span>AI Market Signals</span>
           <span style="width:6px;height:6px;border-radius:50%;background:var(--up);animation:pulse 1.5s infinite;display:inline-block"></span>
         </div>
         <div class="signal-feed" id="signalFeed">
@@ -662,7 +667,7 @@ button, .bn, .ds-item, .coin-row, .ts-chip, .btn-prim, input, select {
       <div class="sdg-right">
         <div id="stakePositionsWrap" style="display:none"><div class="section-title">My Positions</div><div id="stakePositions"></div></div>
         <div id="stakeNoPos" style="padding:40px 20px;text-align:center;color:var(--muted)">
-          <div style="font-size:32px;margin-bottom:12px">🔒</div>
+          <div style="font-size:32px;margin-bottom:12px"><span class="material-symbols-outlined">lock</span></div>
           <div style="font-size:14px;font-weight:700;margin-bottom:6px">No active positions</div>
           <div style="font-size:12px;line-height:1.6">Pick a pool on the left to start earning passive rewards.</div>
         </div>
@@ -695,8 +700,8 @@ button, .bn, .ds-item, .coin-row, .ts-chip, .btn-prim, input, select {
           <div class="psg-item"><div class="psg-lbl">Staking Rewards</div><div class="psg-val" id="portRewardsVal" style="color:var(--up)">{{ staking_rewards|default:'$0' }}</div></div>
         </div>
         <div style="margin-top:20px">
-          <a href="{% url 'wallet' %}" style="display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--gold-l),var(--gold));color:#fff;border-radius:var(--r);padding:12px 16px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:8px">💳 Wallet &amp; Funds</a>
-          <a href="{% url 'portfolio-dashboard' %}" style="display:flex;align-items:center;gap:8px;background:var(--surf2);border:1px solid var(--border);color:var(--txt);border-radius:var(--r);padding:12px 16px;font-size:13px;font-weight:600;text-decoration:none">📊 Full Dashboard</a>
+          <a href="{% url 'wallet' %}" style="display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--gold-l),var(--gold));color:#fff;border-radius:var(--r);padding:12px 16px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:8px"><span class="material-symbols-outlined">account_balance_wallet</span>Wallet &amp; Funds</a>
+          <a href="{% url 'portfolio-dashboard' %}" style="display:flex;align-items:center;gap:8px;background:var(--surf2);border:1px solid var(--border);color:var(--txt);border-radius:var(--r);padding:12px 16px;font-size:13px;font-weight:600;text-decoration:none"><span class="material-symbols-outlined">dashboard</span>Full Dashboard</a>
         </div>
       </div>
     </div>
@@ -725,7 +730,7 @@ button, .bn, .ds-item, .coin-row, .ts-chip, .btn-prim, input, select {
         <div class="pf-avatar">{{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}</div>
         <div class="pf-name">{{ request.user.get_full_name }}</div>
         <div class="pf-email">{{ request.user.email }}</div>
-        <div class="pf-kyc">✓ KYC {{ request.user.get_kyc_status_display }}</div>
+        <div class="pf-kyc"><span class="material-symbols-outlined material-icon-inline">verified</span>KYC {{ request.user.get_kyc_status_display }}</div>
       </div>
       <div style="padding:16px 20px 4px"><div style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase">Simulation Balances</div></div>
       <div class="balance-chips">
@@ -734,26 +739,26 @@ button, .bn, .ds-item, .coin-row, .ts-chip, .btn-prim, input, select {
       </div>
       <div class="pf-menu-section">
         <div class="pf-ms-title">Account</div>
-        <a href="{% url 'portfolio-dashboard' %}" style="text-decoration:none"><div class="pf-menu-item"><div class="pf-mi-icon">📊</div><div class="pf-mi-content"><div class="pf-mi-title">Portfolio Dashboard</div><div class="pf-mi-sub">Allocation charts, sparklines, ledger</div></div><div class="pf-mi-arrow">›</div></div></a>
-        <a href="{% url 'wallet' %}" style="text-decoration:none"><div class="pf-menu-item"><div class="pf-mi-icon">💳</div><div class="pf-mi-content"><div class="pf-mi-title">Wallet &amp; Funds</div><div class="pf-mi-sub">Deposit, withdraw, QR codes</div></div><div class="pf-mi-arrow">›</div></div></a>
-        <div class="pf-menu-item"><div class="pf-mi-icon">🔐</div><div class="pf-mi-content"><div class="pf-mi-title">Security Settings</div><div class="pf-mi-sub">2FA, biometrics, password</div></div><div class="pf-mi-arrow">›</div></div>
-        <div class="pf-menu-item"><div class="pf-mi-icon">✅</div><div class="pf-mi-content"><div class="pf-mi-title">KYC Verification</div><div class="pf-mi-sub" style="color:var(--up)">{{ request.user.get_kyc_status_display }} ✓</div></div><div class="pf-mi-arrow">›</div></div>
+        <a href="{% url 'portfolio-dashboard' %}" style="text-decoration:none"><div class="pf-menu-item"><div class="pf-mi-icon material-symbols-outlined">trending_up</div><div class="pf-mi-content"><div class="pf-mi-title">Portfolio Dashboard</div><div class="pf-mi-sub">Allocation charts, sparklines, ledger</div></div><div class="pf-mi-arrow">›</div></div></a>
+        <a href="{% url 'wallet' %}" style="text-decoration:none"><div class="pf-menu-item"><div class="pf-mi-icon material-symbols-outlined">account_balance_wallet</div><div class="pf-mi-content"><div class="pf-mi-title">Wallet &amp; Funds</div><div class="pf-mi-sub">Deposit, withdraw, QR codes</div></div><div class="pf-mi-arrow">›</div></div></a>
+        <div class="pf-menu-item"><div class="pf-mi-icon material-symbols-outlined">shield</div><div class="pf-mi-content"><div class="pf-mi-title">Security Settings</div><div class="pf-mi-sub">2FA, biometrics, password</div></div><div class="pf-mi-arrow">›</div></div>
+        <div class="pf-menu-item"><div class="pf-mi-icon material-symbols-outlined">verified</div><div class="pf-mi-content"><div class="pf-mi-title">KYC Verification</div><div class="pf-mi-sub" style="color:var(--up)">{{ request.user.get_kyc_status_display }}</div></div><div class="pf-mi-arrow">›</div></div>
       </div>
       <div class="pf-menu-section">
         <div class="pf-ms-title">Simulation</div>
-        <div class="pf-menu-item" onclick="resetSimulation()"><div class="pf-mi-icon">🔄</div><div class="pf-mi-content"><div class="pf-mi-title">Reset Simulation</div><div class="pf-mi-sub">Start over with $10,000</div></div><div class="pf-mi-arrow">›</div></div>
+        <div class="pf-menu-item" onclick="resetSimulation()"><div class="pf-mi-icon material-symbols-outlined">restart_alt</div><div class="pf-mi-content"><div class="pf-mi-title">Reset Simulation</div><div class="pf-mi-sub">Start over with $10,000</div></div><div class="pf-mi-arrow">›</div></div>
       </div>
     </div>
   </div>
 
   <!-- MOBILE BOTTOM NAV -->
   <div class="bnav">
-    <div class="bn active" id="bn-markets"  onclick="navTo('markets')"><div class="bn-icon">◈</div><div class="bn-label">Markets</div></div>
-    <div class="bn" id="bn-trade"     onclick="navTo('trade')"><div class="bn-icon">⚡</div><div class="bn-label">Trade</div></div>
-    <div class="bn" id="bn-staking"   onclick="navTo('staking')"><div class="bn-icon">🔒</div><div class="bn-label">Stake</div></div>
-    <div class="bn" id="bn-wallet"    onclick="window.location.href='{% url 'wallet' %}'"><div class="bn-icon">💳</div><div class="bn-label">Wallet</div></div>
-    <div class="bn" id="bn-portfolio" onclick="navTo('portfolio')"><div class="bn-icon">◎</div><div class="bn-label">Portfolio</div></div>
-    <div class="bn" id="bn-history"   onclick="navTo('history')"><div class="bn-icon">◷</div><div class="bn-label">History</div></div>
+    <div class="bn active" id="bn-markets"  onclick="navTo('markets')"><div class="bn-icon material-symbols-outlined">insights</div><div class="bn-label">Markets</div></div>
+    <div class="bn" id="bn-trade"     onclick="navTo('trade')"><div class="bn-icon material-symbols-outlined">bolt</div><div class="bn-label">Trade</div></div>
+    <div class="bn" id="bn-staking"   onclick="navTo('staking')"><div class="bn-icon material-symbols-outlined">shield</div><div class="bn-label">Stake</div></div>
+    <div class="bn" id="bn-wallet"    onclick="window.location.href='{% url 'wallet' %}'"><div class="bn-icon material-symbols-outlined">account_balance_wallet</div><div class="bn-label">Wallet</div></div>
+    <div class="bn" id="bn-portfolio" onclick="navTo('portfolio')"><div class="bn-icon material-symbols-outlined">stacked_line_chart</div><div class="bn-label">Portfolio</div></div>
+    <div class="bn" id="bn-history"   onclick="navTo('history')"><div class="bn-icon material-symbols-outlined">history</div><div class="bn-label">History</div></div>
   </div>
 </div><!-- /shell -->
 </div><!-- /desktop-main -->
@@ -774,7 +779,7 @@ button, .bn, .ds-item, .coin-row, .ts-chip, .btn-prim, input, select {
       <div class="ts-row"><span class="ts-k">Est. Daily Reward</span><span class="ts-v" id="smDaily">$0.00</span></div>
       <div class="ts-row"><span class="ts-k">Est. Total Reward</span><span class="ts-v" id="smTotal" style="color:var(--up)">$0.00</span></div>
     </div>
-    <button class="btn-prim" onclick="confirmStake()">Confirm Stake 🔒</button>
+    <button class="btn-prim" onclick="confirmStake()">Confirm Stake <span class="material-symbols-outlined">lock</span></button>
     <button style="width:100%;margin-top:10px;padding:12px;background:none;border:none;font-size:14px;color:var(--muted)" onclick="closeStakeModal()">Cancel</button>
   </div>
 </div>
@@ -789,21 +794,21 @@ let STATE = {
 };
 
 const COINS=[
-  {id:'bitcoin',    sym:'BTC', name:'Bitcoin',   color:'#f7931a',bg:'rgba(247,147,26,.12)',e:'₿', stakeable:false},
-  {id:'ethereum',   sym:'ETH', name:'Ethereum',  color:'#627eea',bg:'rgba(98,126,234,.12)', e:'Ξ', stakeable:true},
-  {id:'solana',     sym:'SOL', name:'Solana',    color:'#9945ff',bg:'rgba(153,69,255,.12)', e:'◎', stakeable:true},
-  {id:'binancecoin',sym:'BNB', name:'BNB',       color:'#f3ba2f',bg:'rgba(243,186,47,.12)', e:'B', stakeable:false},
-  {id:'ripple',     sym:'XRP', name:'XRP',       color:'#0085c3',bg:'rgba(0,133,195,.12)',  e:'✕', stakeable:false},
-  {id:'cardano',    sym:'ADA', name:'Cardano',   color:'#0033ad',bg:'rgba(0,51,173,.12)',   e:'∞', stakeable:true},
-  {id:'dogecoin',   sym:'DOGE',name:'Dogecoin',  color:'#c2a633',bg:'rgba(194,166,51,.12)', e:'Ð', stakeable:false},
-  {id:'avalanche-2',sym:'AVAX',name:'Avalanche', color:'#e84142',bg:'rgba(232,65,66,.12)',  e:'▲', stakeable:true},
+  {id:'bitcoin',    sym:'BTC', name:'Bitcoin',   color:'#f7931a',bg:'rgba(247,147,26,.12)',e:'<span class="coin-logo-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 7h3.5a2.5 2.5 0 0 1 0 5H10m0 5h4"/><path d="M11 5v14"/></svg></span>', stakeable:false},
+  {id:'ethereum',   sym:'ETH', name:'Ethereum',  color:'#627eea',bg:'rgba(98,126,234,.12)', e:'<span class="coin-logo-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l8 6-8 6-8-6 8-6z"/><path d="M12 15v6"/></svg></span>', stakeable:true},
+  {id:'solana',     sym:'SOL', name:'Solana',    color:'#9945ff',bg:'rgba(153,69,255,.12)', e:'<span class="coin-logo-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7l12 6-12 6"/><path d="M8 7l12 6-12 6"/></svg></span>', stakeable:true},
+  {id:'binancecoin',sym:'BNB', name:'BNB',       color:'#f3ba2f',bg:'rgba(243,186,47,.12)', e:'<span class="coin-logo-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4.5l4.5 3.9-4.5 3.9-4.5-3.9 4.5-3.9z"/><path d="M4.5 12l3.9 4.5 3.9-4.5-3.9-4.5-3.9 4.5z"/><path d="M19.5 12l-3.9 4.5-3.9-4.5 3.9-4.5 3.9 4.5z"/></svg></span>', stakeable:false},
+  {id:'ripple',     sym:'XRP', name:'XRP',       color:'#0085c3',bg:'rgba(0,133,195,.12)',  e:'<span class="coin-logo-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="12" r="2.5"/><circle cx="12" cy="7" r="2.5"/><circle cx="17" cy="12" r="2.5"/></svg></span>', stakeable:false},
+  {id:'cardano',    sym:'ADA', name:'Cardano',   color:'#0033ad',bg:'rgba(0,51,173,.12)',   e:'<span class="coin-logo-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="5" r="1.8"/><circle cx="16.5" cy="8" r="1.8"/><circle cx="7.5" cy="8" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="17" r="1.8"/><circle cx="8.5" cy="20" r="1.8"/><circle cx="15.5" cy="20" r="1.8"/></svg></span>', stakeable:true},
+  {id:'dogecoin',   sym:'DOGE',name:'Dogecoin',  color:'#c2a633',bg:'rgba(194,166,51,.12)', e:'<span class="coin-logo-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 8h3.5a3.5 3.5 0 0 1 0 7H9V8z"/></svg></span>', stakeable:false},
+  {id:'avalanche-2',sym:'AVAX',name:'Avalanche', color:'#e84142',bg:'rgba(232,65,66,.12)',  e:'<span class="coin-logo-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 18L12 6l7 12H5z"/><path d="M9 16l3-7 3 7"/></svg></span>', stakeable:true},
 ];
 const POOLS=[
-  {id:'eth-flex',coinId:'ethereum',    name:'Ethereum Flexible',lockDays:0,  apy:4.5, fill:58,icon:'Ξ',s:'background:rgba(98,126,234,.1);color:#627eea'},
-  {id:'eth-30',  coinId:'ethereum',    name:'Ethereum 30-Day',  lockDays:30, apy:7.8, fill:72,icon:'Ξ',s:'background:rgba(98,126,234,.1);color:#627eea'},
-  {id:'sol-90',  coinId:'solana',      name:'Solana 90-Day',    lockDays:90, apy:18.5,fill:88,icon:'◎',s:'background:rgba(153,69,255,.1);color:#9945ff'},
-  {id:'ada-60',  coinId:'cardano',     name:'Cardano 60-Day',   lockDays:60, apy:11.2,fill:65,icon:'∞',s:'background:rgba(0,51,173,.1);color:#0033ad'},
-  {id:'avax-30', coinId:'avalanche-2', name:'Avalanche 30-Day', lockDays:30, apy:9.4, fill:50,icon:'▲',s:'background:rgba(232,65,66,.1);color:#e84142'},
+  {id:'eth-flex',coinId:'ethereum',    name:'Ethereum Flexible',lockDays:0,  apy:4.5, fill:58,icon:'<span class="material-symbols-outlined">currency_bitcoin</span>',s:'background:rgba(98,126,234,.1);color:#627eea'},
+  {id:'eth-30',  coinId:'ethereum',    name:'Ethereum 30-Day',  lockDays:30, apy:7.8, fill:72,icon:'<span class="material-symbols-outlined">currency_bitcoin</span>',s:'background:rgba(98,126,234,.1);color:#627eea'},
+  {id:'sol-90',  coinId:'solana',      name:'Solana 90-Day',    lockDays:90, apy:18.5,fill:88,icon:'<span class="material-symbols-outlined">rocket_launch</span>',s:'background:rgba(153,69,255,.1);color:#9945ff'},
+  {id:'ada-60',  coinId:'cardano',     name:'Cardano 60-Day',   lockDays:60, apy:11.2,fill:65,icon:'<span class="material-symbols-outlined">bubble_chart</span>',s:'background:rgba(0,51,173,.1);color:#0033ad'},
+  {id:'avax-30', coinId:'avalanche-2', name:'Avalanche 30-Day', lockDays:30, apy:9.4, fill:50,icon:'<span class="material-symbols-outlined">change_history</span>',s:'background:rgba(232,65,66,.1);color:#e84142'},
 ];
 
 let livePrices={},sparklines={};
@@ -1005,7 +1010,7 @@ function confirmStake(){
   const amt=parseFloat(document.getElementById('stakeAmt').value)||0;if(!activePool)return;if(amt<10){showToast('Minimum stake is $10','error');return}if(amt>STATE.cash){showToast('Insufficient cash','error');return}
   STATE.cash-=amt;STATE.stakePositions.push({poolId:activePool.id,amt,apy:activePool.apy,lockDays:activePool.lockDays,startDate:Date.now(),reward:0,active:true});
   const coin=COINS.find(c=>c.id===activePool.coinId);STATE.transactions.unshift({type:'stake',coinId:activePool.coinId,sym:coin?.sym||'',name:activePool.name,qty:amt,price:1,total:amt,date:new Date()});
-  closeStakeModal();showToast(`Staked ${fmtP(amt)} at ${activePool.apy}% APY 🔒`,'success');renderStaking();updatePortfolioDisplay();
+  closeStakeModal();showToast(`Staked ${fmtP(amt)} at ${activePool.apy}% APY`,'success');renderStaking();updatePortfolioDisplay();
 }
 function unstake(idx,e){e.stopPropagation();const pos=STATE.stakePositions.filter(p=>p.active)[idx];if(!pos)return;const ret=pos.amt+pos.reward;STATE.cash+=ret;pos.active=false;const coin=COINS.find(c=>c.id===POOLS.find(p=>p.id===pos.poolId)?.coinId);STATE.transactions.unshift({type:'unstake',coinId:coin?.id||'',sym:coin?.sym||'',name:'Unstake',qty:ret,price:1,total:ret,date:new Date()});showToast(`Withdrawn ${fmtP(ret)} ✓`,'success');renderStaking();updatePortfolioDisplay()}
 
@@ -1033,7 +1038,7 @@ function renderHistory(){
   const c=document.getElementById('histCount');if(c)c.textContent=count;
   const cd=document.getElementById('histCountD');if(cd)cd.textContent=count;
   if(!txs.length){txList.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px;font-family:\'DM Mono\',monospace">No transactions yet.</div>';return}
-  const icons={buy:'↑',sell:'↓',stake:'🔒',unstake:'🔓',reward:'⭐'};
+  const icons={buy:'<span class="material-symbols-outlined">arrow_upward</span>',sell:'<span class="material-symbols-outlined">arrow_downward</span>',stake:'<span class="material-symbols-outlined">lock</span>',unstake:'<span class="material-symbols-outlined">lock_open</span>',reward:'<span class="material-symbols-outlined">star</span>'};
   txList.innerHTML=txs.map(t=>{const pos=['buy','stake','reward'].includes(t.type);const d=new Date(t.date);return`<div class="tx-row tx-${t.type}"><div class="tx-icon">${icons[t.type]||'·'}</div><div class="tx-info"><div class="tx-type">${t.type==='stake'?'Stake '+t.sym:t.type==='unstake'?'Unstake':t.type==='reward'?'Staking Reward':t.type+' '+t.sym}</div><div class="tx-coin">${fmtP(t.price||1)} per ${t.sym||'—'} · ${d.toLocaleDateString()}</div><span class="tx-status-badge sb-completed">Completed</span></div><div class="tx-right"><div class="tx-amt ${pos?'ti-u':'ti-d'}">${pos?'+':'-'}${fmtP(t.total)}</div><div class="tx-date">${d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div></div></div>`}).join('')
 }
 

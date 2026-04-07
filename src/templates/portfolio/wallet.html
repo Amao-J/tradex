@@ -11,6 +11,7 @@ Mobile: original single-column sheet layout unchanged
 <meta name="csrf-token" content="{{ csrf_token }}"/>
 <title>NexusX — Wallet</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -27,6 +28,8 @@ html,body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--txt);mi
 button{font-family:'Syne',sans-serif;cursor:pointer}
 input,select{font-family:'Syne',sans-serif}
 a{text-decoration:none}
+.material-symbols-outlined{font-family:'Material Symbols Outlined' !important;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;line-height:1;display:inline-flex;align-items:center;justify-content:center;}
+.net-icon svg{width:16px;height:16px;display:block}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 @keyframes toastOut{from{opacity:1}to{opacity:0;transform:translateX(-50%) translateY(10px)}}
@@ -308,14 +311,14 @@ a{text-decoration:none}
     </div>
   </div>
   <nav class="ds-nav">
-    <a class="ds-item" href="{% url 'app-shell' %}"><span class="ds-item-icon">◈</span>Markets</a>
-    <a class="ds-item" href="{% url 'app-shell' %}"><span class="ds-item-icon">⚡</span>Trade</a>
-    <a class="ds-item" href="{% url 'app-shell' %}"><span class="ds-item-icon">🔒</span>Staking</a>
-    <a class="ds-item" href="{% url 'portfolio-dashboard' %}"><span class="ds-item-icon">◎</span>Portfolio</a>
-    <a class="ds-item" href="{% url 'app-shell' %}"><span class="ds-item-icon">◷</span>History</a>
+    <a class="ds-item" href="{% url 'app-shell' %}"><span class="ds-item-icon material-symbols-outlined">analytics</span>Markets</a>
+    <a class="ds-item" href="{% url 'app-shell' %}"><span class="ds-item-icon material-symbols-outlined">show_chart</span>Trade</a>
+    <a class="ds-item" href="{% url 'app-shell' %}"><span class="ds-item-icon material-symbols-outlined">lock</span>Staking</a>
+    <a class="ds-item" href="{% url 'portfolio-dashboard' %}"><span class="ds-item-icon material-symbols-outlined">trending_up</span>Portfolio</a>
+    <a class="ds-item" href="{% url 'app-shell' %}"><span class="ds-item-icon material-symbols-outlined">history</span>History</a>
     <div class="ds-divider"></div>
-    <a class="ds-item active" href="{% url 'wallet' %}"><span class="ds-item-icon">💳</span>Wallet</a>
-    <a class="ds-item" href="{% url 'portfolio-dashboard' %}"><span class="ds-item-icon">📊</span>Dashboard</a>
+    <a class="ds-item active" href="{% url 'wallet' %}"><span class="ds-item-icon material-symbols-outlined">account_balance_wallet</span>Wallet</a>
+    <a class="ds-item" href="{% url 'portfolio-dashboard' %}"><span class="ds-item-icon material-symbols-outlined">dashboard</span>Dashboard</a>
   </nav>
   <div class="ds-user">
     <div class="ds-avatar">{{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}</div>
@@ -323,7 +326,7 @@ a{text-decoration:none}
       <div class="ds-uname">{{ request.user.get_full_name|default:request.user.username }}</div>
       <div class="ds-uemail">{{ request.user.email }}</div>
     </div>
-    <a class="ds-logout" href="{% url 'logout' %}" title="Log out">⎋</a>
+    <a class="ds-logout" href="{% url 'logout' %}" title="Log out"><span class="material-symbols-outlined">logout</span></a>
   </div>
 </div>
 
@@ -368,10 +371,10 @@ a{text-decoration:none}
 
   <!-- QUICK ACTIONS -->
   <div class="wallet-quick" style="background:linear-gradient(180deg,rgba(13,26,18,.9) 0%,var(--bg2) 60%)">
-    <div class="wq-btn" onclick="switchTab('deposit')"><div class="wq-icon" style="color:#4ade80">↓</div><div class="wq-label">Deposit</div></div>
-    <div class="wq-btn" onclick="switchTab('withdraw')"><div class="wq-icon" style="color:#f87171">↑</div><div class="wq-label">Withdraw</div></div>
-    <a href="{% url 'app-shell' %}" style="text-decoration:none"><div class="wq-btn"><div class="wq-icon" style="color:#f0c040">⚡</div><div class="wq-label">Trade</div></div></a>
-    <a href="{% url 'portfolio-dashboard' %}" style="text-decoration:none"><div class="wq-btn"><div class="wq-icon" style="color:#a78bfa">◎</div><div class="wq-label">Portfolio</div></div></a>
+    <div class="wq-btn" onclick="switchTab('deposit')"><div class="wq-icon" style="color:#4ade80"><span class="material-symbols-outlined">download</span></div><div class="wq-label">Deposit</div></div>
+    <div class="wq-btn" onclick="switchTab('withdraw')"><div class="wq-icon" style="color:#f87171"><span class="material-symbols-outlined">upload</span></div><div class="wq-label">Withdraw</div></div>
+    <a href="{% url 'app-shell' %}" style="text-decoration:none"><div class="wq-btn"><div class="wq-icon" style="color:#f0c040"><span class="material-symbols-outlined">bolt</span></div><div class="wq-label">Trade</div></div></a>
+    <a href="{% url 'portfolio-dashboard' %}" style="text-decoration:none"><div class="wq-btn"><div class="wq-icon" style="color:#a78bfa"><span class="material-symbols-outlined">pie_chart</span></div><div class="wq-label">Portfolio</div></div></a>
   </div>
 
   <!-- TABS -->
@@ -395,7 +398,21 @@ a{text-decoration:none}
                 data-network="{{ addr.network }}" data-sym="{{ addr.asset.symbol }}"
                 data-name="{{ addr.get_network_display }}" data-addr="{{ addr.address }}"
                 data-color="{{ addr.asset.color_hex }}">
-          <div class="net-icon" style="background:{{ addr.asset.color_hex }}22;color:{{ addr.asset.color_hex }}">{{ addr.asset.icon_emoji|default:addr.asset.symbol|slice:":1" }}</div>
+          <div class="net-icon" style="background:{{ addr.asset.color_hex }}22;color:{{ addr.asset.color_hex }}">
+            {% if addr.asset.symbol == 'BTC' %}
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 4h1.5c1.38 0 2.5 1.12 2.5 2.5S15.88 11 14.5 11H13v4h1.5c1.38 0 2.5 1.12 2.5 2.5S15.88 20 14.5 20H13v1h-2v-1H8.5C7.12 20 6 18.88 6 17.5S7.12 15 8.5 15H10V9H8.5C7.12 9 6 7.88 6 6.5S7.12 4 8.5 4H10V3h2v1z"/></svg>
+            {% elif addr.asset.symbol == 'ETH' %}
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12,2 4,12 12,9 20,12"/><polygon points="12,22 4,12 12,15 20,12" opacity="0.85"/></svg>
+            {% elif addr.asset.symbol == 'SOL' %}
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12,2 4,8 12,14 20,8"/><polygon points="12,22 4,16 12,10 20,16" opacity="0.85"/></svg>
+            {% elif addr.asset.symbol == 'BNB' %}
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12,2 4,8 12,14 20,8"/><polygon points="12,10 6,14 12,18 18,14" opacity="0.85"/></svg>
+            {% elif addr.asset.symbol == 'USDT' %}
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9 8h6M12 8v8M9 12h5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+            {% else %}
+              {{ addr.asset.icon_emoji|default:addr.asset.symbol|slice:":1" }}
+            {% endif %}
+          </div>
           {{ addr.asset.symbol }}
         </button>
         {% empty %}
@@ -432,7 +449,21 @@ a{text-decoration:none}
                   data-network="{{ addr.network }}" data-sym="{{ addr.asset.symbol }}"
                   data-name="{{ addr.get_network_display }}" data-addr="{{ addr.address }}"
                   data-color="{{ addr.asset.color_hex }}">
-            <div class="net-icon" style="background:{{ addr.asset.color_hex }}22;color:{{ addr.asset.color_hex }}">{{ addr.asset.icon_emoji|default:addr.asset.symbol|slice:":1" }}</div>
+          <div class="net-icon" style="background:{{ addr.asset.color_hex }}22;color:{{ addr.asset.color_hex }}">
+            {% if addr.asset.symbol == 'BTC' %}
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 4h1.5c1.38 0 2.5 1.12 2.5 2.5S15.88 11 14.5 11H13v4h1.5c1.38 0 2.5 1.12 2.5 2.5S15.88 20 14.5 20H13v1h-2v-1H8.5C7.12 20 6 18.88 6 17.5S7.12 15 8.5 15H10V9H8.5C7.12 9 6 7.88 6 6.5S7.12 4 8.5 4H10V3h2v1z"/></svg>
+            {% elif addr.asset.symbol == 'ETH' %}
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12,2 4,12 12,9 20,12"/><polygon points="12,22 4,12 12,15 20,12" opacity="0.85"/></svg>
+            {% elif addr.asset.symbol == 'SOL' %}
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12,2 4,8 12,14 20,8"/><polygon points="12,22 4,16 12,10 20,16" opacity="0.85"/></svg>
+            {% elif addr.asset.symbol == 'BNB' %}
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12,2 4,8 12,14 20,8"/><polygon points="12,10 6,14 12,18 18,14" opacity="0.85"/></svg>
+            {% elif addr.asset.symbol == 'USDT' %}
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9 8h6M12 8v8M9 12h5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+            {% else %}
+              {{ addr.asset.icon_emoji|default:addr.asset.symbol|slice:":1" }}
+            {% endif %}
+          </div>
             <div>
               <div>{{ addr.asset.symbol }}</div>
               <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);margin-top:1px">{{ addr.get_network_display }}</div>
@@ -800,7 +831,7 @@ async function loadHistory(){
           const isCredit=tx.direction==='credit';
           const statusCls=tx.created_at_human==='just now'?'s-processing':'s-completed';
           return`<div class="wh-row ${isCredit?'whr-dep':'whr-wd'}">
-            <div class="whr-icon">${isCredit?'↓':'↑'}</div>
+            <div class="whr-icon"><span class="material-symbols-outlined">${isCredit?'south':'north'}</span></div>
             <div class="whr-info">
               <div class="whr-type">${tx.type_label}</div>
               <div class="whr-net">${tx.asset} · ${tx.description||''}</div>
