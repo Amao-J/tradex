@@ -410,7 +410,7 @@ a{text-decoration:none}
       </div>
       <div class="deposit-notice"><b>⚠ Only send the correct asset on this network.</b> Wrong network = permanent loss. Min. $10.</div>
       <div class="sim-box">
-        <div class="sim-box-title">🧪 Simulate a Deposit</div>
+      <div class="sim-box-title"> Deposit</div>
         <div class="sim-box-sub">Enter an amount to instantly credit your wallet.</div>
         <div class="sim-input-wrap"><input class="sim-input" type="number" id="simAmtMobile" placeholder="Enter amount…" oninput="updateDepPreview('Mobile')"/><span class="sim-input-tag">USD</span></div>
         <div class="preset-amts"><button class="pa" onclick="setSimAmt(100,'Mobile')">$100</button><button class="pa" onclick="setSimAmt(500,'Mobile')">$500</button><button class="pa" onclick="setSimAmt(1000,'Mobile')">$1,000</button><button class="pa" onclick="setSimAmt(5000,'Mobile')">$5,000</button></div>
@@ -476,13 +476,7 @@ a{text-decoration:none}
           <div class="stat-card-sub">USD fiat wallet</div>
         </div>
 
-        <div class="sim-box" style="background:var(--upbg);border-color:rgba(22,163,74,.2);border-radius:var(--r2);padding:18px;margin-bottom:0">
-          <div class="sim-box-title" style="margin-bottom:12px">🧪 Test Deposit</div>
-          <div class="sim-input-wrap"><input class="sim-input" type="number" id="simAmtDesktop" placeholder="Enter amount…" oninput="updateDepPreview('Desktop')"/><span class="sim-input-tag">USD</span></div>
-          <div class="preset-amts"><button class="pa" onclick="setSimAmt(100,'Desktop')">$100</button><button class="pa" onclick="setSimAmt(500,'Desktop')">$500</button><button class="pa" onclick="setSimAmt(1000,'Desktop')">$1,000</button><button class="pa" onclick="setSimAmt(5000,'Desktop')">$5,000</button><button class="pa" onclick="setSimAmt(10000,'Desktop')">$10K</button></div>
-          <div class="dep-preview" id="depPreviewDesktop" style="display:none"><div class="dp-row"><span class="dp-k">Amount</span><span class="dp-v" id="dpAmtDesktop">$0.00</span></div><div class="dp-row"><span class="dp-k">Network</span><span class="dp-v" id="dpNetDesktop">—</span></div><div class="dp-row"><span class="dp-k">New Balance</span><span class="dp-v" style="color:var(--up)" id="dpBalDesktop">$0.00</span></div></div>
-          <button class="btn-confirm-dep" id="depSubmitBtnDesktop" onclick="submitDeposit('Desktop')">Confirm Deposit →</button>
-        </div>
+
       </div>
     </div>
   </div>

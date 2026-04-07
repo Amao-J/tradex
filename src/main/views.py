@@ -114,31 +114,33 @@ def signup_view(request):
 
     return render(request, "index.html", {"form": form})
 
-
+@require_POST
 def signin_view(request):
-    if request.user.is_authenticated:
-        return redirect("portfolio-dashboard")
+    email = (request.POST.get("email") or "").strip()
+    password = request.POST.get("password") or ""
 
-    if request.method == "POST":
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            return JsonResponse({
-                "success": True,
-                "user": {
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "email": user.email,
-                }
-            })
-        else:
-            return JsonResponse({"errors": form.errors}, status=400)
-    else:
-        form = AuthenticationForm()
+    if not email or not password:
+        return JsonResponse({
+            "errors": {"__all__": ["Email and password are required."]}
+        }, status=400)
 
-    return render(request, "index.html", {"form": form})
+    try:
+        user_obj = User.objects.get(email__iexact=email)
+    except User.DoesNotExist:
+        return JsonResponse({
+            "errors": {"__all__": ["Invalid email or password."]}
+        }, status=400)
 
+    user = authenticate(request, username=user_obj.username, password=password)
+
+    if user is None:
+        return JsonResponse({
+            "errors": {"__all__": ["Invalid email or password."]}
+        }, status=400)
+
+    login(request, user)
+
+    return JsonResponse({"success": True})
 
 def logout_view(request):
     logout(request)

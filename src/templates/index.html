@@ -381,8 +381,7 @@ footer{background:var(--bg3);border-top:1px solid var(--border);padding:32px 48p
         <div class="af-sub" id="authSub">Get started in under 2 minutes.</div>
         <div class="error-box" id="authErrors"></div>
 
-
-<div class="af-group" id="authEmailGroup">
+        <div class="af-group" id="authEmailGroup">
   <label class="af-label" id="authEmailLabel">Email Address</label>
   <input
     class="af-input"
@@ -403,9 +402,17 @@ footer{background:var(--bg3);border-top:1px solid var(--border);padding:32px 48p
     placeholder="alexmorgan"
   />
 </div>
-          <div><label class="af-label">First Name</label><input class="af-input" type="text" id="authFirst" name="first_name" placeholder="Alex"/></div>
-          <div><label class="af-label">Last Name</label><input class="af-input" type="text" id="authLast" name="last_name" placeholder="Morgan"/></div>
-        </div>
+
+<div class="af-row" id="authNameRow">
+  <div>
+    <label class="af-label">First Name</label>
+    <input class="af-input" type="text" id="authFirst" name="first_name" placeholder="Alex"/>
+  </div>
+  <div>
+    <label class="af-label">Last Name</label>
+    <input class="af-input" type="text" id="authLast" name="last_name" placeholder="Morgan"/>
+  </div>
+</div>
         <div class="af-group">
           <label class="af-label">Password</label>
           <div class="pw-wrap"><input class="af-input" type="password" id="authPw" name="password1" placeholder="Min. 8 characters" oninput="checkStrength(this.value)"/><button class="eye-btn" type="button" onclick="togglePw('authPw',this)">👁</button></div>
@@ -505,31 +512,29 @@ function setMode(mode){
   // always stay on step 1 when switching modes
   document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
   document.getElementById('as1').classList.add('active');
+if(isSignin){
+  document.getElementById('authTitle').textContent = 'Welcome back';
+  document.getElementById('authSub').textContent = 'Sign in to your account.';
+  document.getElementById('authStepLbl').textContent = 'Sign In';
+  document.getElementById('authLinkRow').innerHTML =
+    'New here? <a onclick="setMode(\'signup\')">Create account</a>';
+  document.getElementById('authProg').style.width = '100%';
 
-  if(isSignin){
-    document.getElementById('authTitle').textContent = 'Welcome back';
-    document.getElementById('authSub').textContent = 'Sign in to your account.';
-    document.getElementById('authStepLbl').textContent = 'Sign In';
-    document.getElementById('authLinkRow').innerHTML =
-      'New here? <a onclick="setMode(\'signup\')">Create account</a>';
-    document.getElementById('authProg').style.width = '100%';
+  // ✅ SHOW EMAIL FIELD
+  if(emailGrp) emailGrp.style.display = 'block';
 
-    if(emailGrp) emailGrp.style.display = 'none';
-    if(nameRow) nameRow.style.display = 'none';
-    if(pw2Grp) pw2Grp.style.display = 'none';
-    if(terms) terms.style.display = 'none';
-    if(divider) divider.style.display = 'none';
-    if(soc) soc.style.display = 'none';
 
-    if(usernameGrp) usernameGrp.style.display = 'block';
-    if(usernameLabel) usernameLabel.textContent = 'Email Address';
+  if(usernameGrp) usernameGrp.style.display = 'none';
 
-    usernameInput.type = 'email';
-    usernameInput.placeholder = 'you@example.com';
+  if(nameRow) nameRow.style.display = 'none';
+  if(pw2Grp) pw2Grp.style.display = 'none';
+  if(terms) terms.style.display = 'none';
+  if(divider) divider.style.display = 'none';
+  if(soc) soc.style.display = 'none';
 
-    btn.textContent = 'Sign In →';
-    btn.onclick = submitSignin;
-  } else {
+  btn.textContent = 'Sign In →';
+  btn.onclick = submitSignin;
+} else {
     document.getElementById('authTitle').textContent = 'Create account';
     document.getElementById('authSub').textContent = 'Get started in under 2 minutes.';
     document.getElementById('authStepLbl').textContent = 'Step 1 of 3';
@@ -622,7 +627,7 @@ async function submitSignup(){
 
 async function submitSignin(){
   const form = new FormData();
-  form.append('username', document.getElementById('authUsername').value.trim());
+  form.append('email', document.getElementById('authEmail').value.trim());
   form.append('password', document.getElementById('authPw').value);
   form.append('csrfmiddlewaretoken', getCsrf());
 
